@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>VenueFlow - Gate Status</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+                  "on-primary-container": "#00285d",
+                  "on-tertiary-container": "#5c0008",
+                  "on-secondary-fixed-variant": "#005321",
+                  "tertiary": "#ffb3ad",
+                  "on-tertiary-fixed": "#410004",
+                  "tertiary-fixed-dim": "#ffb3ad",
+                  "surface": "#111319",
+                  "surface-container-lowest": "#0c0e14",
+                  "on-secondary": "#003915",
+                  "primary-fixed-dim": "#adc6ff",
+                  "primary-fixed": "#d8e2ff",
+                  "surface-container-high": "#282a30",
+                  "on-secondary-fixed": "#002109",
+                  "surface-tint": "#adc6ff",
+                  "on-primary": "#002e6a",
+                  "on-tertiary-fixed-variant": "#930013",
+                  "on-tertiary": "#68000a",
+                  "outline": "#8c909f",
+                  "secondary-container": "#00b954",
+                  "error": "#ffb4ab",
+                  "primary": "#adc6ff",
+                  "outline-variant": "#424754",
+                  "tertiary-container": "#ff5451",
+                  "inverse-on-surface": "#2e3037",
+                  "on-primary-fixed-variant": "#004395",
+                  "on-primary-fixed": "#001a42",
+                  "surface-bright": "#373940",
+                  "on-surface": "#e2e2eb",
+                  "inverse-surface": "#e2e2eb",
+                  "secondary-fixed-dim": "#4ae176",
+                  "surface-variant": "#33343b",
+                  "surface-container-low": "#191b22",
+                  "error-container": "#93000a",
+                  "surface-dim": "#111319",
+                  "secondary": "#4ae176",
+                  "on-surface-variant": "#c2c6d6",
+                  "on-error": "#690005",
+                  "on-error-container": "#ffdad6",
+                  "inverse-primary": "#005ac2",
+                  "background": "#111319",
+                  "surface-container": "#1e1f26",
+                  "on-secondary-container": "#004119",
+                  "surface-container-highest": "#33343b",
+                  "primary-container": "#4d8eff",
+                  "tertiary-fixed": "#ffdad7",
+                  "secondary-fixed": "#6bff8f",
+                  "on-background": "#e2e2eb"
+          },
+          "borderRadius": {
+                  "DEFAULT": "0.125rem",
+                  "lg": "0.25rem",
+                  "xl": "0.5rem",
+                  "full": "0.75rem"
+          },
+          "fontFamily": {
+                  "headline": ["Inter"],
+                  "body": ["Inter"],
+                  "label": ["Inter"]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    body { font-family: 'Inter', sans-serif; }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      vertical-align: middle;
+    }
+  </style>
+</head>
+<body class="bg-surface text-on-surface antialiased overflow-hidden">
+<!-- TopAppBar Shell -->
+<header class="fixed top-0 left-0 w-full h-16 flex items-center justify-between px-6 bg-[#111319]/80 backdrop-blur-md z-50">
+<div class="flex items-center gap-4">
+<span class="text-xl font-black tracking-tighter text-[#adc6ff]">VenueFlow</span>
+<div class="h-4 w-px bg-outline-variant mx-2"></div>
+<span class="text-sm font-medium text-[#adc6ff]">Main Stadium - Summer Fest 2024</span>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-2 bg-surface-container-high px-3 py-1 rounded-full">
+<span class="w-2 h-2 rounded-full bg-error animate-pulse"></span>
+<span class="text-lg font-bold tracking-tight text-on-surface">24.5k Live</span>
+</div>
+<button class="bg-error-container text-on-error-container px-4 py-1 rounded-lg font-bold text-xs uppercase tracking-widest hover:opacity-90 transition-all active:scale-95">SOS</button>
+</div>
+</header>
+<!-- SideNavBar Shell -->
+<nav class="fixed left-0 top-16 bottom-0 w-64 flex flex-col py-8 bg-[#111319] z-40">
+<div class="px-8 mb-10">
+<div class="text-lg font-bold text-[#adc6ff]">VenueFlow</div>
+<div class="text-[10px] font-medium uppercase tracking-[0.2em] text-on-surface-variant/60">Command Center</div>
+</div>
+<div class="flex flex-col gap-1">
+<!-- Dashboard -->
+<a class="flex items-center gap-4 px-8 py-3 text-xs font-medium uppercase tracking-widest text-[#e2e2eb]/40 hover:bg-[#191b22] hover:text-[#e2e2eb] transition-all duration-300" href="#">
+<span class="material-symbols-outlined text-lg" data-icon="dashboard">dashboard</span>
+<span>Dashboard</span>
+</a>
+<!-- Heatmap -->
+<a class="flex items-center gap-4 px-8 py-3 text-xs font-medium uppercase tracking-widest text-[#e2e2eb]/40 hover:bg-[#191b22] hover:text-[#e2e2eb] transition-all duration-300" href="#">
+<span class="material-symbols-outlined text-lg" data-icon="map">map</span>
+<span>Heatmap</span>
+</a>
+<!-- Gates (ACTIVE) -->
+<a class="flex items-center gap-4 px-8 py-3 text-xs font-medium uppercase tracking-widest text-[#adc6ff] bg-[#191b22] relative after:content-[''] after:absolute after:right-0 after:h-8 after:w-1 after:bg-[#adc6ff] after:rounded-l-full transition-all duration-300" href="#">
+<span class="material-symbols-outlined text-lg" data-icon="door_front">door_front</span>
+<span>Gates</span>
+</a>
+<!-- Alerts -->
+<a class="flex items-center gap-4 px-8 py-3 text-xs font-medium uppercase tracking-widest text-[#e2e2eb]/40 hover:bg-[#191b22] hover:text-[#e2e2eb] transition-all duration-300" href="#">
+<span class="material-symbols-outlined text-lg" data-icon="notifications">notifications</span>
+<span>Alerts</span>
+</a>
+<!-- Staff -->
+<a class="flex items-center gap-4 px-8 py-3 text-xs font-medium uppercase tracking-widest text-[#e2e2eb]/40 hover:bg-[#191b22] hover:text-[#e2e2eb] transition-all duration-300" href="#">
+<span class="material-symbols-outlined text-lg" data-icon="badge">badge</span>
+<span>Staff</span>
+</a>
+<!-- Analytics -->
+<a class="flex items-center gap-4 px-8 py-3 text-xs font-medium uppercase tracking-widest text-[#e2e2eb]/40 hover:bg-[#191b22] hover:text-[#e2e2eb] transition-all duration-300" href="#">
+<span class="material-symbols-outlined text-lg" data-icon="analytics">analytics</span>
+<span>Analytics</span>
+</a>
+</div>
+</nav>
+<!-- Main Canvas -->
+<main class="pl-64 pt-16 h-screen overflow-y-auto bg-surface-container-lowest">
+<div class="max-w-[1400px] mx-auto p-8 space-y-8">
+<!-- Summary Bar: Asymmetric Bento Style -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+<div class="md:col-span-4 bg-surface-container-low p-6 rounded-xl flex flex-col justify-between">
+<span class="text-xs font-medium uppercase tracking-widest text-on-surface-variant">Total Entry Rate</span>
+<div class="flex items-baseline gap-2 mt-4">
+<span class="text-4xl font-bold text-on-surface">2,450</span>
+<span class="text-sm font-medium text-secondary">/ min</span>
+</div>
+<div class="w-full h-1 bg-surface-container-high mt-4 rounded-full overflow-hidden">
+<div class="h-full bg-secondary w-3/4"></div>
+</div>
+</div>
+<div class="md:col-span-5 bg-surface-container-low p-6 rounded-xl relative overflow-hidden">
+<div class="relative z-10 flex flex-col h-full justify-between">
+<span class="text-xs font-medium uppercase tracking-widest text-on-surface-variant">Peak Pressure Gate</span>
+<div class="mt-4">
+<span class="text-5xl font-black text-primary">GATE C</span>
+<p class="text-sm text-on-surface-variant mt-2">East Wing Entry — Operating at 89% capacity</p>
+</div>
+</div>
+<div class="absolute -right-4 -bottom-4 opacity-5">
+<span class="material-symbols-outlined text-[120px]" data-icon="warning">warning</span>
+</div>
+</div>
+<div class="md:col-span-3 bg-surface-container-low p-6 rounded-xl flex flex-col justify-between border-l-4 border-primary">
+<span class="text-xs font-medium uppercase tracking-widest text-on-surface-variant">Avg Wait Time</span>
+<div class="mt-4">
+<span class="text-4xl font-bold text-on-surface">4.2</span>
+<span class="text-xl font-medium text-on-surface-variant">mins</span>
+</div>
+<p class="text-[10px] text-secondary mt-2 flex items-center gap-1">
+<span class="material-symbols-outlined text-xs" data-icon="trending_down">trending_down</span>
+            12% lower than previous hour
+          </p>
+</div>
+</div>
+<!-- Gate Status List: Editorial Density -->
+<section>
+<div class="flex items-center justify-between mb-6">
+<h2 class="text-sm font-bold uppercase tracking-[0.3em] text-on-surface-variant">Active Gate Control</h2>
+<div class="flex items-center gap-2 text-xs font-medium text-on-surface-variant">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+            6 Gates Active
+          </div>
+</div>
+<div class="space-y-px rounded-xl overflow-hidden bg-outline-variant/10">
+<!-- Row: Gate A -->
+<div class="grid grid-cols-12 items-center px-8 py-5 bg-surface-container-low hover:bg-surface-container-high transition-colors group">
+<div class="col-span-3 flex items-center gap-4">
+<div class="w-10 h-10 rounded bg-surface-container-high flex items-center justify-center font-bold text-primary">A</div>
+<div>
+<div class="text-sm font-bold text-on-surface uppercase tracking-tight">Gate A - Main North</div>
+<div class="text-[10px] text-on-surface-variant uppercase tracking-widest">General Admission</div>
+</div>
+</div>
+<div class="col-span-3 px-4">
+<div class="flex items-center justify-between mb-1">
+<span class="text-[10px] font-medium text-on-surface-variant uppercase tracking-widest">Flow: 450/min</span>
+<span class="text-[10px] font-bold text-on-surface">45%</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-secondary transition-all" style="width: 45%;"></div>
+</div>
+</div>
+<div class="col-span-2 text-center">
+<span class="inline-flex items-center justify-center px-3 py-1 rounded bg-secondary/10 text-secondary text-[10px] font-black tracking-widest uppercase">OPEN</span>
+</div>
+<div class="col-span-3 px-4">
+<div class="text-[10px] font-medium text-on-surface-variant uppercase tracking-widest mb-1">Recommended Action</div>
+<div class="text-xs text-on-surface italic">"Keep monitoring"</div>
+</div>
+<div class="col-span-1 text-right">
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors" data-icon="more_vert">more_vert</button>
+</div>
+</div>
+<!-- Row: Gate B -->
+<div class="grid grid-cols-12 items-center px-8 py-5 bg-surface-container-low hover:bg-surface-container-high transition-colors group">
+<div class="col-span-3 flex items-center gap-4">
+<div class="w-10 h-10 rounded bg-surface-container-high flex items-center justify-center font-bold text-primary">B</div>
+<div>
+<div class="text-sm font-bold text-on-surface uppercase tracking-tight">Gate B - VIP South</div>
+<div class="text-[10px] text-on-surface-variant uppercase tracking-widest">Premium Entry</div>
+</div>
+</div>
+<div class="col-span-3 px-4">
+<div class="flex items-center justify-between mb-1">
+<span class="text-[10px] font-medium text-on-surface-variant uppercase tracking-widest">Flow: 120/min</span>
+<span class="text-[10px] font-bold text-on-surface">12%</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-secondary transition-all" style="width: 12%;"></div>
+</div>
+</div>
+<div class="col-span-2 text-center">
+<span class="inline-flex items-center justify-center px-3 py-1 rounded bg-secondary/10 text-secondary text-[10px] font-black tracking-widest uppercase">OPEN</span>
+</div>
+<div class="col-span-3 px-4">
+<div class="text-[10px] font-medium text-on-surface-variant uppercase tracking-widest mb-1">Recommended Action</div>
+<div class="text-xs text-on-surface italic">"Standard check"</div>
+</div>
+<div class="col-span-1 text-right">
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors" data-icon="more_vert">more_vert</button>
+</div>
+</div>
+<!-- Row: Gate C (BUSY) -->
+<div class="grid grid-cols-12 items-center px-8 py-5 bg-surface-container-high transition-colors relative">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-tertiary"></div>
+<div class="col-span-3 flex items-center gap-4">
+<div class="w-10 h-10 rounded bg-surface-container-highest flex items-center justify-center font-bold text-tertiary">C</div>
+<div>
+<div class="text-sm font-bold text-on-surface uppercase tracking-tight">Gate C - East Wing</div>
+<div class="text-[10px] text-on-surface-variant uppercase tracking-widest">Stadium Main Hub</div>
+</div>
+</div>
+<div class="col-span-3 px-4">
+<div class="flex items-center justify-between mb-1">
+<span class="text-[10px] font-medium text-tertiary uppercase tracking-widest">Flow: 890/min</span>
+<span class="text-[10px] font-bold text-tertiary">89%</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-tertiary transition-all" style="width: 89%;"></div>
+</div>
+</div>
+<div class="col-span-2 text-center">
+<span class="inline-flex items-center justify-center px-3 py-1 rounded bg-tertiary/20 text-tertiary text-[10px] font-black tracking-widest uppercase">BUSY</span>
+</div>
+<div class="col-span-3 px-4">
+<div class="text-[10px] font-medium text-tertiary uppercase tracking-widest mb-1">URGENT ACTION</div>
+<div class="text-xs text-tertiary font-bold italic">"Divert to Gate D"</div>
+</div>
+<div class="col-span-1 text-right">
+<button class="material-symbols-outlined text-tertiary transition-colors" data-icon="warning" style="font-variation-settings: 'FILL' 1;">warning</button>
+</div>
+</div>
+<!-- Row: Gate D -->
+<div class="grid grid-cols-12 items-center px-8 py-5 bg-surface-container-low hover:bg-surface-container-high transition-colors group">
+<div class="col-span-3 flex items-center gap-4">
+<div class="w-10 h-10 rounded bg-surface-container-high flex items-center justify-center font-bold text-primary">D</div>
+<div>
+<div class="text-sm font-bold text-on-surface uppercase tracking-tight">Gate D - West Entry</div>
+<div class="text-[10px] text-on-surface-variant uppercase tracking-widest">Overflow Access</div>
+</div>
+</div>
+<div class="col-span-3 px-4">
+<div class="flex items-center justify-between mb-1">
+<span class="text-[10px] font-medium text-on-surface-variant uppercase tracking-widest">Flow: 310/min</span>
+<span class="text-[10px] font-bold text-on-surface">31%</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-secondary transition-all" style="width: 31%;"></div>
+</div>
+</div>
+<div class="col-span-2 text-center">
+<span class="inline-flex items-center justify-center px-3 py-1 rounded bg-secondary/10 text-secondary text-[10px] font-black tracking-widest uppercase">OPEN</span>
+</div>
+<div class="col-span-3 px-4">
+<div class="text-[10px] font-medium text-on-surface-variant uppercase tracking-widest mb-1">Recommended Action</div>
+<div class="text-xs text-on-surface italic">"Ready for overflow"</div>
+</div>
+<div class="col-span-1 text-right">
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors" data-icon="more_vert">more_vert</button>
+</div>
+</div>
+<!-- Row: Gate E -->
+<div class="grid grid-cols-12 items-center px-8 py-5 bg-surface-container-low hover:bg-surface-container-high transition-colors group">
+<div class="col-span-3 flex items-center gap-4">
+<div class="w-10 h-10 rounded bg-surface-container-high flex items-center justify-center font-bold text-primary">E</div>
+<div>
+<div class="text-sm font-bold text-on-surface uppercase tracking-tight">Gate E - Service Entry</div>
+<div class="text-[10px] text-on-surface-variant uppercase tracking-widest">Staff &amp; Vendors</div>
+</div>
+</div>
+<div class="col-span-3 px-4">
+<div class="flex items-center justify-between mb-1">
+<span class="text-[10px] font-medium text-on-surface-variant uppercase tracking-widest">Flow: 12/min</span>
+<span class="text-[10px] font-bold text-on-surface">2%</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-secondary transition-all" style="width: 2%;"></div>
+</div>
+</div>
+<div class="col-span-2 text-center">
+<span class="inline-flex items-center justify-center px-3 py-1 rounded bg-secondary/10 text-secondary text-[10px] font-black tracking-widest uppercase">OPEN</span>
+</div>
+<div class="col-span-3 px-4">
+<div class="text-[10px] font-medium text-on-surface-variant uppercase tracking-widest mb-1">Recommended Action</div>
+<div class="text-xs text-on-surface italic">"Clearance only"</div>
+</div>
+<div class="col-span-1 text-right">
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors" data-icon="more_vert">more_vert</button>
+</div>
+</div>
+<!-- Row: Gate F (CLOSED) -->
+<div class="grid grid-cols-12 items-center px-8 py-5 bg-surface-container-lowest transition-colors group opacity-60">
+<div class="col-span-3 flex items-center gap-4">
+<div class="w-10 h-10 rounded bg-surface-container-high flex items-center justify-center font-bold text-outline">F</div>
+<div>
+<div class="text-sm font-bold text-on-surface-variant uppercase tracking-tight">Gate F - Media Gate</div>
+<div class="text-[10px] text-on-surface-variant/40 uppercase tracking-widest">Press Only</div>
+</div>
+</div>
+<div class="col-span-3 px-4">
+<div class="flex items-center justify-between mb-1">
+<span class="text-[10px] font-medium text-on-surface-variant uppercase tracking-widest">Flow: 0/min</span>
+<span class="text-[10px] font-bold text-on-surface-variant">0%</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-outline transition-all" style="width: 0%;"></div>
+</div>
+</div>
+<div class="col-span-2 text-center">
+<span class="inline-flex items-center justify-center px-3 py-1 rounded bg-surface-container-highest text-outline text-[10px] font-black tracking-widest uppercase">CLOSED</span>
+</div>
+<div class="col-span-3 px-4">
+<div class="text-[10px] font-medium text-on-surface-variant uppercase tracking-widest mb-1">Schedule</div>
+<div class="text-xs text-on-surface italic">"Re-open at 20:00"</div>
+</div>
+<div class="col-span-1 text-right">
+<button class="material-symbols-outlined text-on-surface-variant/40 hover:text-primary transition-colors" data-icon="lock" style="font-variation-settings: 'FILL' 1;">lock</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Live Map Preview Area -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<div class="lg:col-span-2 bg-surface-container-low rounded-xl overflow-hidden min-h-[300px] relative group">
+<img class="w-full h-full object-cover filter grayscale contrast-125 brightness-50 group-hover:scale-105 transition-transform duration-[2000ms]" data-alt="high-angle architectural site plan of a modern sports stadium at night with glowing blue perimeter lights and dark textured surfaces" data-location="London" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB2ZbGg7_jLO29PCuPL3crGXvVF9E9Za__Dfaom3yzedttChe7ofFmWwhyp9pKZgOJS5uJv0oJdo_DsJthB489agMiyAEm3J_vRWhRXxGC-EFu3XrSLNvOSAnq_xQ_fDCJeUXZ8xlowcFMwPz2HGnzd4hgKmw-J7eO5jSxE68dIbqjCsk3LlJIr55r7HcaIWBqR65wgw2ma2yiY38wmQs0J-I5AlVR-jwggneAzinzsyD6OXX-hQlmoQZQehuqBkRH7lE_JgE0YF5M"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface to-transparent opacity-60"></div>
+<div class="absolute bottom-6 left-6">
+<span class="text-[10px] font-bold uppercase tracking-[0.3em] text-primary">Live Perimeter Telemetry</span>
+<h3 class="text-xl font-black text-on-surface uppercase mt-1">Spatial Distribution</h3>
+</div>
+<!-- Pulse Indicators -->
+<div class="absolute top-1/4 right-1/3">
+<span class="relative flex h-4 w-4">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-tertiary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-4 w-4 bg-tertiary"></span>
+</span>
+</div>
+<div class="absolute bottom-1/3 left-1/4">
+<span class="relative flex h-3 w-3">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-3 w-3 bg-secondary"></span>
+</span>
+</div>
+</div>
+<div class="bg-surface-container-low p-6 rounded-xl space-y-6">
+<h3 class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Gate Distribution Trend</h3>
+<div class="flex flex-col gap-4">
+<div class="space-y-2">
+<div class="flex justify-between text-[10px] uppercase font-bold tracking-widest">
+<span>North Sector</span>
+<span class="text-secondary">Optimal</span>
+</div>
+<div class="w-full h-1 bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-secondary w-[45%]"></div>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between text-[10px] uppercase font-bold tracking-widest">
+<span>East Sector</span>
+<span class="text-tertiary font-black">Critical</span>
+</div>
+<div class="w-full h-1 bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-tertiary w-[89%]"></div>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between text-[10px] uppercase font-bold tracking-widest">
+<span>West Sector</span>
+<span class="text-primary">Balanced</span>
+</div>
+<div class="w-full h-1 bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[31%]"></div>
+</div>
+</div>
+</div>
+<div class="pt-4 border-t border-outline-variant/10">
+<button class="w-full py-3 bg-primary text-on-primary-container text-xs font-black uppercase tracking-widest rounded hover:brightness-110 transition-all">Optimize Flow Plan</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

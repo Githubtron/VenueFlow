@@ -7,7 +7,7 @@ import { Sidebar } from './components/Sidebar';
 import { LoginPage } from './pages/LoginPage';
 import { LiveMapPage } from './pages/LiveMapPage';
 import { VenueConfigPage } from './pages/VenueConfigPage';
-import { SimulationPage } from './pages/SimulationPage';
+import SimulationPage from './pages/SimulationPage';
 import { VendorPage } from './pages/VendorPage';
 import { EventSwitcherPage } from './pages/EventSwitcherPage';
 import { EmergencyPage } from './pages/EmergencyPage';
@@ -18,35 +18,45 @@ import { AnalyticsPage } from './pages/AnalyticsPage';
 import { SponsorAnalyticsPage } from './pages/SponsorAnalyticsPage';
 
 const styles: Record<string, React.CSSProperties> = {
-  app: { display: 'flex', minHeight: '100vh' },
-  content: { flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' },
-  unauthorized: {
+  // Full-page shell — sidebar is fixed, so no flex needed here
+  shell: { minHeight: '100vh', background: '#111319' },
+  // Content area offset to the right of the fixed 256px sidebar
+  content: {
+    marginLeft: 256,
+    minHeight: '100vh',
     display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: '100vh',
     flexDirection: 'column',
-    gap: 12,
-    color: '#94a3b8',
+    background: '#111319',
+  },
+  unauthorized: {
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    height: '100vh', flexDirection: 'column', gap: 12,
+    color: '#8c909f', background: '#111319',
   },
 };
 
 function UnauthorizedPage() {
   return (
     <main style={styles.unauthorized} role="main">
-      <span style={{ fontSize: 40 }} aria-hidden="true">🔒</span>
-      <h2 style={{ color: '#e2e8f0', fontSize: 18 }}>Access Denied</h2>
-      <p style={{ fontSize: 14 }}>You don't have permission to view this page.</p>
+      <span style={{ fontSize: 36, opacity: 0.3 }} aria-hidden="true">⊘</span>
+      <h2 style={{ color: '#e2e2eb', fontSize: 16, fontWeight: 700, letterSpacing: '-0.01em' }}>Access Denied</h2>
+      <p style={{ fontSize: 12, color: '#8c909f', fontWeight: 500 }}>You don't have permission to view this page.</p>
     </main>
   );
 }
 
-/** Layout wrapper that includes the sidebar for authenticated routes */
+/**
+ * DashboardLayout — matches Stitch fixed-sidebar + fixed-topbar pattern.
+ * Sidebar is position:fixed at left:0. Content is offset by marginLeft:256.
+ * All routing and RBAC guards are untouched.
+ */
 function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div style={styles.app}>
+    <div style={styles.shell}>
       <Sidebar />
-      <div style={styles.content}>{children}</div>
+      <div style={styles.content}>
+        {children}
+      </div>
     </div>
   );
 }

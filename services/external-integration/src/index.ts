@@ -114,7 +114,7 @@ if (require.main === module) {
   const venueIds = (process.env['VENUE_IDS'] ?? '').split(',').filter(Boolean);
 
   // Attempt to connect Kafka producer for enrichment publishing
-  let producer: { send: (args: { topic: string; messages: Array<{ value: string }> }) => Promise<void> } | null = null;
+  let producer: any = null;
 
   (async () => {
     const brokers = (process.env['KAFKA_BROKERS'] ?? '').split(',').filter(Boolean);
@@ -123,7 +123,7 @@ if (require.main === module) {
         const { Kafka } = await import('kafkajs');
         const kafka = new Kafka({ clientId: 'external-integration', brokers });
         producer = kafka.producer();
-        await (producer as import('kafkajs').Producer).connect();
+        await producer.connect();
         console.log('[external-integration] Kafka producer connected');
       } catch (err) {
         console.warn('[external-integration] Kafka unavailable — enrichment publishing disabled:', err);

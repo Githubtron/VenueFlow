@@ -50,37 +50,37 @@ const STATUS_COLORS: Record<ZoneCapacity['status'], string> = {
   violation: '#ef4444',
 };
 
-const styles: Record<string, React.CSSProperties> = {
-  page: { display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden', background: '#0f172a' },
-  body: { display: 'flex', flex: 1, overflow: 'hidden' },
-  main: { flex: 1, overflowY: 'auto', padding: 16, display: 'flex', flexDirection: 'column', gap: 16 },
-  card: { background: '#1e293b', borderRadius: 8, padding: 16 },
-  cardTitle: { color: '#e2e8f0', fontSize: 14, fontWeight: 600, marginBottom: 12 },
-  table: { width: '100%', borderCollapse: 'collapse' as const },
-  th: { color: '#94a3b8', fontSize: 11, fontWeight: 600, textAlign: 'left' as const, padding: '6px 8px', borderBottom: '1px solid #334155' },
-  td: { color: '#cbd5e1', fontSize: 12, padding: '8px 8px', borderBottom: '1px solid #1e293b' },
+const styles = {
+  page: { display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden', background: '#0f172a' } as React.CSSProperties,
+  body: { display: 'flex', flex: 1, overflow: 'hidden' } as React.CSSProperties,
+  main: { flex: 1, overflowY: 'auto', padding: 16, display: 'flex', flexDirection: 'column', gap: 16 } as React.CSSProperties,
+  card: { background: '#1e293b', borderRadius: 8, padding: 16 } as React.CSSProperties,
+  cardTitle: { color: '#e2e8f0', fontSize: 14, fontWeight: 600, marginBottom: 12 } as React.CSSProperties,
+  table: { width: '100%', borderCollapse: 'collapse' as const } as React.CSSProperties,
+  th: { color: '#94a3b8', fontSize: 11, fontWeight: 600, textAlign: 'left' as const, padding: '6px 8px', borderBottom: '1px solid #334155' } as React.CSSProperties,
+  td: { color: '#cbd5e1', fontSize: 12, padding: '8px 8px', borderBottom: '1px solid #1e293b' } as React.CSSProperties,
+  filterRow: { display: 'flex', gap: 8, marginBottom: 12, alignItems: 'center' } as React.CSSProperties,
+  input: { background: '#0f172a', border: '1px solid #334155', borderRadius: 4, color: '#e2e8f0', fontSize: 12, padding: '6px 10px' } as React.CSSProperties,
+  exportBtn: { background: '#334155', color: '#e2e8f0', border: 'none', borderRadius: 4, padding: '6px 14px', fontSize: 12, cursor: 'pointer' } as React.CSSProperties,
+  reportBtn: { background: '#2563eb', color: '#fff', border: 'none', borderRadius: 6, padding: '10px 20px', fontSize: 13, fontWeight: 600, cursor: 'pointer' } as React.CSSProperties,
+  gdprRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid #1e293b' } as React.CSSProperties,
+  gdprEmail: { color: '#cbd5e1', fontSize: 12 } as React.CSSProperties,
+  gdprConsents: { display: 'flex', gap: 6 } as React.CSSProperties,
+  emptyState: { color: '#64748b', fontSize: 13, textAlign: 'center', padding: '24px 0' } as React.CSSProperties,
+  reportFeedback: { color: '#86efac', fontSize: 12, marginTop: 8 } as React.CSSProperties,
   statusBadge: (status: ZoneCapacity['status']): React.CSSProperties => ({
     display: 'inline-block', borderRadius: 4, padding: '2px 8px', fontSize: 11, fontWeight: 600,
     background: STATUS_COLORS[status] + '22', color: STATUS_COLORS[status], border: `1px solid ${STATUS_COLORS[status]}`,
   }),
-  filterRow: { display: 'flex', gap: 8, marginBottom: 12, alignItems: 'center' },
-  input: { background: '#0f172a', border: '1px solid #334155', borderRadius: 4, color: '#e2e8f0', fontSize: 12, padding: '6px 10px' },
-  exportBtn: { background: '#334155', color: '#e2e8f0', border: 'none', borderRadius: 4, padding: '6px 14px', fontSize: 12, cursor: 'pointer' },
-  reportBtn: { background: '#2563eb', color: '#fff', border: 'none', borderRadius: 6, padding: '10px 20px', fontSize: 13, fontWeight: 600, cursor: 'pointer' },
-  gdprRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid #1e293b' },
-  gdprEmail: { color: '#cbd5e1', fontSize: 12 },
-  gdprConsents: { display: 'flex', gap: 6 },
   consentTag: (granted: boolean): React.CSSProperties => ({
     display: 'inline-block', borderRadius: 4, padding: '1px 6px', fontSize: 10, fontWeight: 600,
     background: granted ? '#14532d' : '#7f1d1d', color: granted ? '#86efac' : '#fca5a5',
   }),
-  emptyState: { color: '#64748b', fontSize: 13, textAlign: 'center', padding: '24px 0' },
-  reportFeedback: { color: '#86efac', fontSize: 12, marginTop: 8 },
   capacityBar: (pct: number, status: ZoneCapacity['status']): React.CSSProperties => ({
     height: 4, borderRadius: 2, background: STATUS_COLORS[status],
     width: `${Math.min(pct, 100)}%`, transition: 'width 0.3s',
   }),
-};
+} as const;
 
 function downloadCsv(entries: AuditEntry[]) {
   const header = 'Timestamp,User,Action,Resource,Details,IP\n';
@@ -152,7 +152,9 @@ export function CompliancePage() {
           {/* Fire-code capacity table */}
           <div style={styles.card}>
             <div style={styles.cardTitle}>Fire-Code Capacity Status</div>
-            {zones.length === 0 ? (
+            {!connected && zones.length === 0 ? (
+              <div style={styles.emptyState}>⏳ Loading capacity data…</div>
+            ) : zones.length === 0 ? (
               <div style={styles.emptyState}>No capacity data available</div>
             ) : (
               <table style={styles.table} aria-label="Zone capacity status">
@@ -224,7 +226,9 @@ export function CompliancePage() {
                 Export CSV
               </button>
             </div>
-            {auditEntries.length === 0 ? (
+            {!connected && auditEntries.length === 0 ? (
+              <div style={styles.emptyState}>⏳ Loading audit trail…</div>
+            ) : auditEntries.length === 0 ? (
               <div style={styles.emptyState}>No audit entries for selected range</div>
             ) : (
               <table style={styles.table} aria-label="Audit log entries">
@@ -271,7 +275,9 @@ export function CompliancePage() {
           {/* GDPR consent management (ADMIN) */}
           <div style={styles.card}>
             <div style={styles.cardTitle}>GDPR Consent Management</div>
-            {consents.length === 0 ? (
+            {!connected && consents.length === 0 ? (
+              <div style={styles.emptyState}>⏳ Loading consent records…</div>
+            ) : consents.length === 0 ? (
               <div style={styles.emptyState}>No consent records found</div>
             ) : (
               consents.map((c) => (

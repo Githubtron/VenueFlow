@@ -1,266 +1,148 @@
 /**
- * SimulationPage — Task 15.7
+ * SimulationPage — Crowd Simulation Dashboard
  *
- * Pre-event simulation dashboard: gate load forecast charts, staff deployment plan.
- * Trigger simulation run (ADMIN role). Requirements 27.1, 27.2, 27.3.
+ * Real-time crowd density simulation with configurable event types and durations.
  */
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useAuth } from '../auth/useAuth';
-import { useApi, apiFetch } from '../hooks/useApi';
 import { TopBar } from '../components/TopBar';
-import { SimulationCharts, GateForecastPoint, StaffDeploymentPlan } from '../components/SimulationCharts';
+import { SimulationLive } from '../components/SimulationLive';
+import { ZoneSnapshot } from '../components/ZoneHeatmap';
 
-interface SimulationRun {
-  simulationRunId: string;
-  venueId: string;
-  eventId: string;
-  status: 'pending' | 'running' | 'completed' | 'failed';
-  createdAt: string;
-  completedAt?: string;
-  gateForecast?: GateForecastPoint[];
-  gateIds?: string[];
-  staffPlan?: StaffDeploymentPlan[];
-}
+// Demo zones
+const DEMO_ZONES: ZoneSnapshot[] = [
+  { zoneId: 'z1', name: 'Main Stage', currentCount: 0, densityPercent: 0, status: 'green', capacity: 5000 },
+  { zoneId: 'z2', name: 'North Stand', currentCount: 0, densityPercent: 0, status: 'green', capacity: 4000 },
+  { zoneId: 'z3', name: 'South Stand', currentCount: 0, densityPercent: 0, status: 'green', capacity: 4000 },
+  { zoneId: 'z4', name: 'East Concourse', currentCount: 0, densityPercent: 0, status: 'green', capacity: 2500 },
+  { zoneId: 'z5', name: 'West Concourse', currentCount: 0, densityPercent: 0, status: 'green', capacity: 2500 },
+  { zoneId: 'z6', name: 'Gate A Entry', currentCount: 0, densityPercent: 0, status: 'green', capacity: 500 },
+  { zoneId: 'z7', name: 'Gate B Entry', currentCount: 0, densityPercent: 0, status: 'green', capacity: 500 },
+  { zoneId: 'z8', name: 'Food Court', currentCount: 0, densityPercent: 0, status: 'green', capacity: 1000 },
+  { zoneId: 'z9', name: 'VIP Lounge', currentCount: 0, densityPercent: 0, status: 'green', capacity: 500 },
+  { zoneId: 'z10', name: 'Parking Zone A', currentCount: 0, densityPercent: 0, status: 'unavailable', capacity: 800 },
+  { zoneId: 'z11', name: 'Medical Bay', currentCount: 0, densityPercent: 0, status: 'green', capacity: 100 },
+  { zoneId: 'z12', name: 'Press Area', currentCount: 0, densityPercent: 0, status: 'green', capacity: 200 },
+];
 
-const styles: Record<string, React.CSSProperties> = {
-  page: { display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' },
-  body: { flex: 1, overflowY: 'auto', padding: 24 },
-  toolbar: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 12,
-    marginBottom: 20,
-    flexWrap: 'wrap',
-  },
-  select: {
-    background: '#1a1d27',
-    border: '1px solid #2d3148',
-    borderRadius: 6,
-    padding: '8px 12px',
-    color: '#e2e8f0',
-    fontSize: 13,
-    outline: 'none',
-  },
-  runBtn: {
-    background: '#7c6af7',
-    border: 'none',
-    color: '#fff',
-    padding: '9px 20px',
-    borderRadius: 6,
-    cursor: 'pointer',
-    fontSize: 13,
-    fontWeight: 600,
-  },
-  runBtnDisabled: {
-    background: '#334155',
-    cursor: 'not-allowed',
-  },
-  statusBadge: {
-    padding: '4px 12px',
-    borderRadius: 10,
-    fontSize: 12,
-    fontWeight: 600,
-  },
-  runList: {
-    background: '#1a1d27',
-    border: '1px solid #2d3148',
-    borderRadius: 8,
-    marginBottom: 20,
-    overflow: 'hidden',
-  },
-  runListHeader: {
-    padding: '12px 16px',
-    background: '#1e2235',
-    borderBottom: '1px solid #2d3148',
-    fontSize: 14,
-    fontWeight: 600,
-    color: '#e2e8f0',
-  },
-  runItem: {
-    padding: '10px 16px',
-    borderBottom: '1px solid #1e2235',
-    display: 'flex',
-    alignItems: 'center',
-    gap: 12,
-    cursor: 'pointer',
-  },
-  runItemActive: { background: 'rgba(124,106,247,0.08)' },
-  runId: { fontSize: 12, color: '#94a3b8', fontFamily: 'monospace', flex: 1 },
-  runTime: { fontSize: 11, color: '#475569' },
-  error: {
-    padding: '10px 14px',
-    background: 'rgba(239,68,68,0.1)',
-    border: '1px solid #ef4444',
-    borderRadius: 6,
-    color: '#fca5a5',
-    fontSize: 13,
-    marginBottom: 16,
-  },
-};
+export default function SimulationPage() {
+  const { isAuthenticated } = useAuth();
+  const [eventType, setEventType] = useState<'concert' | 'sports' | 'gathering' | 'festival'>('concert');
+  const [duration, setDuration] = useState(120);
 
-const STATUS_COLORS: Record<SimulationRun['status'], string> = {
-  pending: '#f59e0b',
-  running: '#3b82f6',
-  completed: '#22c55e',
-  failed: '#ef4444',
-};
-
-export function SimulationPage() {
-  const { user } = useAuth();
-  const venueId = user?.venueId ?? '';
-
-  const [selectedEventId, setSelectedEventId] = useState('');
-  const [selectedRunId, setSelectedRunId] = useState<string | null>(null);
-  const [triggering, setTriggering] = useState(false);
-  const [triggerError, setTriggerError] = useState('');
-
-  const { data: eventsData } = useApi<{ events: { eventId: string; name: string }[] }>(
-    venueId ? `/events?venueId=${venueId}&status=scheduled` : null
-  );
-  const events = eventsData?.events ?? [];
-
-  const { data: runsData, refetch: refetchRuns } = useApi<{ runs: SimulationRun[] }>(
-    venueId && selectedEventId
-      ? `/simulation/${venueId}/runs?eventId=${selectedEventId}`
-      : null
-  );
-  const runs = runsData?.runs ?? [];
-
-  const { data: runDetail } = useApi<SimulationRun>(
-    selectedRunId ? `/simulation/${venueId}/runs/${selectedRunId}` : null
-  );
-
-  async function triggerSimulation() {
-    if (!venueId || !selectedEventId) return;
-    setTriggering(true);
-    setTriggerError('');
-    try {
-      const result = await apiFetch<{ simulationRunId: string }>(
-        `/simulation/${venueId}/run?eventId=${selectedEventId}`,
-        { method: 'POST' }
-      );
-      setSelectedRunId(result.simulationRunId);
-      refetchRuns();
-    } catch (err) {
-      setTriggerError((err as Error).message);
-    } finally {
-      setTriggering(false);
-    }
+  if (!isAuthenticated) {
+    return (
+      <div style={{ padding: 20, textAlign: 'center', color: '#8c909f' }}>
+        Please log in to access simulations.
+      </div>
+    );
   }
 
   return (
-    <div style={styles.page}>
-      <TopBar title="Pre-Event Simulation" />
-      <div style={styles.body}>
-        {/* Toolbar */}
-        <div style={styles.toolbar}>
-          <label htmlFor="event-select" style={{ fontSize: 13, color: '#94a3b8' }}>
-            Event:
-          </label>
-          <select
-            id="event-select"
-            style={styles.select}
-            value={selectedEventId}
-            onChange={(e) => {
-              setSelectedEventId(e.target.value);
-              setSelectedRunId(null);
-            }}
-            aria-label="Select event for simulation"
-          >
-            <option value="">— Select event —</option>
-            {events.map((ev) => (
-              <option key={ev.eventId} value={ev.eventId}>
-                {ev.name}
-              </option>
-            ))}
-          </select>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: '#0c0e14' }}>
+      <TopBar title="Crowd Simulation" />
 
-          <button
-            style={{
-              ...styles.runBtn,
-              ...(triggering || !selectedEventId ? styles.runBtnDisabled : {}),
-            }}
-            onClick={triggerSimulation}
-            disabled={triggering || !selectedEventId}
-            aria-busy={triggering}
-            aria-label="Trigger simulation run"
-          >
-            {triggering ? 'Running…' : '▶ Run Simulation'}
-          </button>
+      <div style={{ flex: 1, padding: '20px 24px', maxWidth: '1400px', width: '100%', margin: '0 auto' }}>
+        {/* Header */}
+        <div style={{ marginBottom: 24 }}>
+          <h1 style={{ fontSize: 24, fontWeight: 900, color: '#e2e2eb', marginBottom: 8 }}>
+            Crowd Density Simulation
+          </h1>
+          <p style={{ fontSize: 13, color: '#8c909f' }}>
+            Run realistic crowd movement simulations for event planning and safety validation
+          </p>
         </div>
 
-        {triggerError && (
-          <div style={styles.error} role="alert">
-            {triggerError}
+        {/* Event Type and Duration Config */}
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap: 16,
+            marginBottom: 24,
+          }}
+        >
+          <div
+            style={{
+              background: '#191b22',
+              padding: '16px 20px',
+              borderRadius: 12,
+              borderLeft: '3px solid #adc6ff',
+            }}
+          >
+            <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#8c909f', textTransform: 'uppercase', marginBottom: 8, letterSpacing: '0.1em' }}>
+              Event Type
+            </label>
+            <select
+              value={eventType}
+              onChange={(e) => setEventType(e.target.value as any)}
+              style={{
+                width: '100%',
+                padding: '10px 12px',
+                background: '#0c0e14',
+                color: '#e2e2eb',
+                border: '1px solid #424754',
+                borderRadius: 6,
+                fontSize: 13,
+                fontWeight: 600,
+                cursor: 'pointer',
+              }}
+            >
+              <option value="concert">🎵 Concert</option>
+              <option value="sports">🏟️ Sports Event</option>
+              <option value="gathering">👥 Gathering</option>
+              <option value="festival">🎉 Festival</option>
+            </select>
+            <p style={{ fontSize: 11, color: '#6b7284', marginTop: 8 }}>
+              {eventType === 'concert' && 'Simulate concert crowd: buildup → peak → decline'}
+              {eventType === 'sports' && 'Simulate sports event: pre-event → halftime rush → post-event'}
+              {eventType === 'gathering' && 'Simulate steady gathering: gradual buildup and decline'}
+              {eventType === 'festival' && 'Simulate festival: multiple waves of activity throughout day'}
+            </p>
           </div>
-        )}
 
-        {/* Simulation runs list */}
-        {runs.length > 0 && (
-          <section style={styles.runList} aria-label="Simulation runs">
-            <div style={styles.runListHeader}>Simulation Runs</div>
-            <ul style={{ listStyle: 'none' }}>
-              {runs.map((run) => (
-                <li
-                  key={run.simulationRunId}
-                  style={{
-                    ...styles.runItem,
-                    ...(selectedRunId === run.simulationRunId ? styles.runItemActive : {}),
-                  }}
-                  onClick={() => setSelectedRunId(run.simulationRunId)}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') setSelectedRunId(run.simulationRunId);
-                  }}
-                  aria-label={`Simulation run ${run.simulationRunId}, status: ${run.status}`}
-                  aria-pressed={selectedRunId === run.simulationRunId}
-                >
-                  <span style={styles.runId}>{run.simulationRunId}</span>
-                  <span
-                    style={{
-                      ...styles.statusBadge,
-                      background: STATUS_COLORS[run.status] + '22',
-                      color: STATUS_COLORS[run.status],
-                    }}
-                  >
-                    {run.status}
-                  </span>
-                  <span style={styles.runTime}>
-                    {new Date(run.createdAt).toLocaleString()}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
-
-        {/* Simulation results */}
-        {runDetail && runDetail.status === 'completed' && (
-          <SimulationCharts
-            forecastData={runDetail.gateForecast ?? []}
-            gateIds={runDetail.gateIds ?? []}
-            staffPlan={runDetail.staffPlan ?? []}
-          />
-        )}
-
-        {runDetail && runDetail.status === 'running' && (
-          <div style={{ color: '#3b82f6', fontSize: 14, padding: 24 }} role="status" aria-live="polite">
-            ⏳ Simulation in progress…
+          <div
+            style={{
+              background: '#191b22',
+              padding: '16px 20px',
+              borderRadius: 12,
+              borderLeft: '3px solid #f59e0b',
+            }}
+          >
+            <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#8c909f', textTransform: 'uppercase', marginBottom: 8, letterSpacing: '0.1em' }}>
+              Duration (seconds)
+            </label>
+            <input
+              type="number"
+              value={duration}
+              onChange={(e) => setDuration(Math.max(30, Math.min(600, Number(e.target.value))))}
+              style={{
+                width: '100%',
+                padding: '10px 12px',
+                background: '#0c0e14',
+                color: '#e2e2eb',
+                border: '1px solid #424754',
+                borderRadius: 6,
+                fontSize: 13,
+                fontWeight: 600,
+                fontFamily: 'monospace',
+              }}
+              min="30"
+              max="600"
+              step="10"
+            />
+            <p style={{ fontSize: 11, color: '#6b7284', marginTop: 8 }}>
+              Simulation duration in seconds (30-600). Run at 10x speed for realism.
+            </p>
           </div>
-        )}
+        </div>
 
-        {runDetail && runDetail.status === 'failed' && (
-          <div style={styles.error} role="alert">
-            Simulation failed. Please try again.
-          </div>
-        )}
-
-        {!selectedEventId && (
-          <div style={{ color: '#475569', fontSize: 14, padding: 24 }}>
-            Select an event to view or run simulations.
-          </div>
-        )}
+        {/* Simulation Component */}
+        <SimulationLive
+          initialZones={DEMO_ZONES}
+          eventType={eventType}
+          duration={duration * 1000}
+        />
       </div>
     </div>
   );

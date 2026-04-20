@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { AnomalyAlert } from './AnomalyAlertPanel';
 import { StaffLocation } from './StaffPinsOverlay';
 
@@ -8,118 +8,114 @@ interface RedeploymentPanelProps {
   onRedeploy?: (staffId: string, targetZoneId: string) => void;
 }
 
-const styles: Record<string, React.CSSProperties> = {
-  panel: {
-    background: '#1a1d27',
-    border: '1px solid #2d3148',
-    borderRadius: 8,
-    overflow: 'hidden',
-  },
-  header: {
-    padding: '12px 16px',
-    background: '#1e2235',
-    borderBottom: '1px solid #2d3148',
-    fontSize: 14,
-    fontWeight: 600,
-    color: '#e2e8f0',
-  },
-  inactive: { padding: 24, textAlign: 'center', color: '#475569', fontSize: 13 },
-  body: { padding: 16 },
-  alertInfo: {
-    padding: '10px 12px',
-    background: 'rgba(239,68,68,0.1)',
-    borderRadius: 6,
-    borderLeft: '3px solid #ef4444',
-    marginBottom: 12,
-    fontSize: 13,
-    color: '#fca5a5',
-  },
-  recommendation: {
-    padding: '10px 12px',
-    background: 'rgba(124,106,247,0.1)',
-    borderRadius: 6,
-    borderLeft: '3px solid #7c6af7',
-    marginBottom: 16,
-    fontSize: 13,
-    color: '#a78bfa',
-  },
-  staffTitle: { fontSize: 12, color: '#94a3b8', marginBottom: 8, fontWeight: 600 },
-  staffItem: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 8,
-    padding: '8px 0',
-    borderBottom: '1px solid #1e2235',
-  },
-  staffName: { fontSize: 13, color: '#e2e8f0', flex: 1 },
-  redeployBtn: {
-    background: '#7c6af7',
-    border: 'none',
-    color: '#fff',
-    padding: '4px 10px',
-    borderRadius: 4,
-    cursor: 'pointer',
-    fontSize: 11,
-    fontWeight: 600,
-  },
-};
-
-export function RedeploymentPanel({
-  activeAlert,
-  availableStaff,
-  onRedeploy,
-}: RedeploymentPanelProps) {
+export function RedeploymentPanel({ activeAlert, availableStaff, onRedeploy }: RedeploymentPanelProps) {
   if (!activeAlert) {
     return (
-      <section style={styles.panel} aria-label="Redeployment panel">
-        <div style={styles.header}>Redeployment Suggestions</div>
-        <div style={styles.inactive}>No active anomaly — all clear</div>
+      <section aria-label="Redeployment panel">
+        <div style={{ fontSize: 10, fontWeight: 900, color: '#c2c6d6', letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: 10 }}>
+          Redeployment
+        </div>
+        <div style={{
+          background: '#191b22', borderRadius: 10, padding: '20px 16px',
+          textAlign: 'center', color: '#424754', fontSize: 12,
+          fontWeight: 600, letterSpacing: '0.05em',
+        }}>
+          All clear — no active anomaly
+        </div>
       </section>
     );
   }
 
   const nearbyStaff = availableStaff
-    .filter((s) => s.isAvailable && s.zoneId !== activeAlert.zoneId)
-    .slice(0, 5);
+    .filter(s => s.isAvailable && s.zoneId !== activeAlert.zoneId)
+    .slice(0, 4);
 
   return (
-    <section style={styles.panel} aria-label="Redeployment suggestions panel" aria-live="polite">
-      <div style={styles.header}>Redeployment Suggestions</div>
-      <div style={styles.body}>
-        <div style={styles.alertInfo}>
-          ⚠ Alert: {activeAlert.zoneName ?? activeAlert.zoneId} at{' '}
-          {activeAlert.currentDensityPercent.toFixed(0)}% density
-        </div>
-        {activeAlert.deploymentRecommendation && (
-          <div style={styles.recommendation}>
-            📋 {activeAlert.deploymentRecommendation}
-          </div>
-        )}
-        <div style={styles.staffTitle}>Available staff to redeploy:</div>
-        {nearbyStaff.length === 0 ? (
-          <div style={{ color: '#475569', fontSize: 13 }}>No available staff found</div>
-        ) : (
-          <ul style={{ listStyle: 'none' }}>
-            {nearbyStaff.map((staff) => (
-              <li key={staff.staffId} style={styles.staffItem}>
-                <span style={styles.staffName}>{staff.name}</span>
-                <span style={{ fontSize: 11, color: '#475569' }}>
-                  {staff.zoneName ?? staff.zoneId}
-                </span>
-                {onRedeploy && (
-                  <button
-                    style={styles.redeployBtn}
-                    onClick={() => onRedeploy(staff.staffId, activeAlert.zoneId)}
-                    aria-label={`Redeploy ${staff.name} to ${activeAlert.zoneName ?? activeAlert.zoneId}`}
-                  >
-                    Deploy
-                  </button>
-                )}
-              </li>
-            ))}
-          </ul>
-        )}
+    <section aria-label="Redeployment suggestions panel" aria-live="polite">
+      <div style={{ fontSize: 10, fontWeight: 900, color: '#ffb3ad', letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: 10 }}>
+        Urgent Action
       </div>
+
+      {/* Alert info */}
+      <div style={{
+        background: 'rgba(255,84,81,0.08)',
+        borderLeft: '3px solid #ff5451',
+        borderRadius: '0 8px 8px 0',
+        padding: '10px 12px',
+        marginBottom: 10,
+        fontSize: 12, color: '#ffb3ad', fontWeight: 600,
+      }}>
+        ⚠ {activeAlert.zoneName ?? activeAlert.zoneId} at {activeAlert.currentDensityPercent.toFixed(0)}% density
+      </div>
+
+      {/* Recommendation */}
+      {activeAlert.deploymentRecommendation && (
+        <div style={{
+          background: 'rgba(77,142,255,0.08)',
+          borderLeft: '3px solid #4d8eff',
+          borderRadius: '0 8px 8px 0',
+          padding: '10px 12px',
+          marginBottom: 14,
+          fontSize: 11, color: '#adc6ff',
+        }}>
+          {activeAlert.deploymentRecommendation}
+        </div>
+      )}
+
+      {/* Staff to redeploy */}
+      <div style={{ fontSize: 9, fontWeight: 900, color: '#8c909f', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: 8 }}>
+        Available to redeploy
+      </div>
+
+      {nearbyStaff.length === 0 ? (
+        <div style={{ color: '#424754', fontSize: 12 }}>No available staff found</div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          {nearbyStaff.map(staff => (
+            <div key={staff.staffId} style={{
+              display: 'flex', alignItems: 'center', gap: 10,
+              background: '#191b22', borderRadius: 8, padding: '9px 12px',
+            }}>
+              <div style={{
+                width: 28, height: 28, borderRadius: 6,
+                background: '#282a30',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 11, fontWeight: 900, color: '#adc6ff', flexShrink: 0,
+              }}>
+                {staff.name[0]}
+              </div>
+              <div style={{ flex: 1, overflow: 'hidden' }}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: '#e2e2eb', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {staff.name}
+                </div>
+                <div style={{ fontSize: 10, color: '#8c909f' }}>{staff.zoneName ?? staff.zoneId}</div>
+              </div>
+              {onRedeploy && (
+                <button
+                  onClick={() => onRedeploy(staff.staffId, activeAlert.zoneId)}
+                  aria-label={`Redeploy ${staff.name} to ${activeAlert.zoneName ?? activeAlert.zoneId}`}
+                  style={{
+                    background: '#adc6ff',
+                    border: 'none',
+                    color: '#001a42',
+                    padding: '5px 10px',
+                    borderRadius: 4,
+                    cursor: 'pointer',
+                    fontSize: 9,
+                    fontWeight: 900,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.1em',
+                    flexShrink: 0,
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  Deploy
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
     </section>
   );
 }

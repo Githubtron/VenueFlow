@@ -59,34 +59,39 @@ type Tab = 'replay' | 'trends' | 'reports';
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
-const s: Record<string, React.CSSProperties> = {
-  page: { display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden', background: '#0f172a' },
-  body: { flex: 1, overflowY: 'auto', padding: 16, display: 'flex', flexDirection: 'column', gap: 16 },
-  tabs: { display: 'flex', gap: 4, borderBottom: '1px solid #334155', marginBottom: 16 },
+const staticStyles = {
+  page: { display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden', background: '#0f172a' } as const,
+  body: { flex: 1, overflowY: 'auto', padding: 16, display: 'flex', flexDirection: 'column', gap: 16 } as const,
+  tabs: { display: 'flex', gap: 4, borderBottom: '1px solid #334155', marginBottom: 16 } as const,
+  card: { background: '#1e293b', borderRadius: 8, padding: 16 } as const,
+  cardTitle: { color: '#e2e8f0', fontSize: 14, fontWeight: 600, marginBottom: 12 } as const,
+  scrubber: { width: '100%', accentColor: '#3b82f6', cursor: 'pointer' } as const,
+  zoneGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: 8, marginTop: 12 } as const,
+  zoneName: { color: '#e2e8f0', fontSize: 11, fontWeight: 600 } as const,
+  zoneDensity: { color: '#94a3b8', fontSize: 10, marginTop: 2 } as const,
+  table: { width: '100%', borderCollapse: 'collapse' as const },
+  th: { color: '#94a3b8', fontSize: 11, fontWeight: 600, textAlign: 'left' as const, padding: '6px 8px', borderBottom: '1px solid #334155' } as const,
+  td: { color: '#cbd5e1', fontSize: 12, padding: '8px 8px', borderBottom: '1px solid #1e293b' } as const,
+  btn: { background: '#2563eb', color: '#fff', border: 'none', borderRadius: 6, padding: '8px 18px', fontSize: 13, fontWeight: 600, cursor: 'pointer' } as const,
+  activeBadge: { display: 'inline-block', borderRadius: 4, padding: '1px 8px', fontSize: 10, fontWeight: 700, background: '#14532d', color: '#86efac' } as const,
+  emptyState: { color: '#64748b', fontSize: 13, textAlign: 'center', padding: '32px 0' } as const,
+  feedback: { color: '#86efac', fontSize: 12, marginTop: 8 } as const,
+} as const;
+
+const dynamicStyles = {
   tab: (active: boolean): React.CSSProperties => ({
     padding: '8px 20px', fontSize: 13, fontWeight: 600, cursor: 'pointer', border: 'none',
     background: 'transparent', color: active ? '#e2e8f0' : '#64748b',
     borderBottom: active ? '2px solid #3b82f6' : '2px solid transparent',
   }),
-  card: { background: '#1e293b', borderRadius: 8, padding: 16 },
-  cardTitle: { color: '#e2e8f0', fontSize: 14, fontWeight: 600, marginBottom: 12 },
-  scrubber: { width: '100%', accentColor: '#3b82f6', cursor: 'pointer' },
-  zoneGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: 8, marginTop: 12 },
   zoneCell: (status: ZoneSnapshot['status']): React.CSSProperties => ({
     borderRadius: 6, padding: '8px 10px', textAlign: 'center',
     background: status === 'green' ? '#14532d' : status === 'yellow' ? '#78350f' : status === 'red' ? '#7f1d1d' : '#1e293b',
     border: `1px solid ${status === 'green' ? '#22c55e' : status === 'yellow' ? '#f59e0b' : status === 'red' ? '#ef4444' : '#334155'}`,
   }),
-  zoneName: { color: '#e2e8f0', fontSize: 11, fontWeight: 600 },
-  zoneDensity: { color: '#94a3b8', fontSize: 10, marginTop: 2 },
-  table: { width: '100%', borderCollapse: 'collapse' as const },
-  th: { color: '#94a3b8', fontSize: 11, fontWeight: 600, textAlign: 'left' as const, padding: '6px 8px', borderBottom: '1px solid #334155' },
-  td: { color: '#cbd5e1', fontSize: 12, padding: '8px 8px', borderBottom: '1px solid #1e293b' },
-  btn: { background: '#2563eb', color: '#fff', border: 'none', borderRadius: 6, padding: '8px 18px', fontSize: 13, fontWeight: 600, cursor: 'pointer' },
-  activeBadge: { display: 'inline-block', borderRadius: 4, padding: '1px 8px', fontSize: 10, fontWeight: 700, background: '#14532d', color: '#86efac' },
-  emptyState: { color: '#64748b', fontSize: 13, textAlign: 'center', padding: '32px 0' },
-  feedback: { color: '#86efac', fontSize: 12, marginTop: 8 },
 };
+
+const s: Record<string, any> = { ...staticStyles, ...dynamicStyles };
 
 // ─── Replay Tab ───────────────────────────────────────────────────────────────
 

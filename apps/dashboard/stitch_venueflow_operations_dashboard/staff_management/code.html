@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>VenueFlow | Staff Management</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-fixed-dim": "#4ae176",
+                        "surface-tint": "#adc6ff",
+                        "secondary-container": "#00b954",
+                        "on-primary-fixed": "#001a42",
+                        "on-tertiary-fixed": "#410004",
+                        "tertiary-fixed": "#ffdad7",
+                        "surface-container-highest": "#33343b",
+                        "secondary-fixed": "#6bff8f",
+                        "outline": "#8c909f",
+                        "surface-dim": "#111319",
+                        "on-error": "#690005",
+                        "surface-container-lowest": "#0c0e14",
+                        "on-primary-fixed-variant": "#004395",
+                        "inverse-primary": "#005ac2",
+                        "tertiary-container": "#ff5451",
+                        "on-secondary": "#003915",
+                        "tertiary": "#ffb3ad",
+                        "on-surface-variant": "#c2c6d6",
+                        "error-container": "#93000a",
+                        "on-secondary-fixed": "#002109",
+                        "on-error-container": "#ffdad6",
+                        "inverse-surface": "#e2e2eb",
+                        "primary": "#adc6ff",
+                        "surface-container-low": "#191b22",
+                        "outline-variant": "#424754",
+                        "on-secondary-container": "#004119",
+                        "on-background": "#e2e2eb",
+                        "on-tertiary-container": "#5c0008",
+                        "background": "#111319",
+                        "tertiary-fixed-dim": "#ffb3ad",
+                        "primary-fixed": "#d8e2ff",
+                        "on-surface": "#e2e2eb",
+                        "on-secondary-fixed-variant": "#005321",
+                        "surface-container-high": "#282a30",
+                        "error": "#ffb4ab",
+                        "on-tertiary-fixed-variant": "#930013",
+                        "secondary": "#4ae176",
+                        "primary-container": "#4d8eff",
+                        "surface-variant": "#33343b",
+                        "on-tertiary": "#68000a",
+                        "surface": "#111319",
+                        "primary-fixed-dim": "#adc6ff",
+                        "surface-container": "#1e1f26",
+                        "on-primary-container": "#00285d",
+                        "surface-bright": "#373940",
+                        "inverse-on-surface": "#2e3037",
+                        "on-primary": "#002e6a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #111319; color: #e2e2eb; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .staff-grid-layout { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; }
+    </style>
+</head>
+<body class="bg-surface-dim selection:bg-primary-container selection:text-on-primary-container">
+<!-- SideNavBar (Authority Source: JSON) -->
+<aside class="fixed left-0 top-0 h-screen w-64 flex flex-col bg-[#191b22] dark:bg-[#191b22] py-6 gap-2 z-[60]">
+<div class="px-6 mb-8">
+<h1 class="text-[#adc6ff] font-bold text-lg uppercase tracking-widest">VenueFlow</h1>
+<p class="text-slate-400 text-xs font-medium uppercase tracking-tighter">Command Center</p>
+</div>
+<nav class="flex-1 flex flex-col gap-1 pr-4">
+<a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-slate-200 hover:bg-[#282a30] transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-lg">dashboard</span>
+<span class="font-['Inter'] text-sm font-medium">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-slate-200 hover:bg-[#282a30] transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-lg">map</span>
+<span class="font-['Inter'] text-sm font-medium">Heatmap</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-slate-200 hover:bg-[#282a30] transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-lg">door_front</span>
+<span class="font-['Inter'] text-sm font-medium">Gates</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-slate-200 hover:bg-[#282a30] transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-lg">notifications_active</span>
+<span class="font-['Inter'] text-sm font-medium">Alerts</span>
+</a>
+<!-- Staff Active State (Contextual Logic) -->
+<a class="flex items-center gap-3 px-4 py-3 bg-[#282a30] text-[#adc6ff] rounded-r-full" href="#">
+<span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">groups</span>
+<span class="font-['Inter'] text-sm font-semibold">Staff</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-slate-200 hover:bg-[#282a30] transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-lg">analytics</span>
+<span class="font-['Inter'] text-sm font-medium">Analytics</span>
+</a>
+</nav>
+<div class="px-4 mt-auto">
+<button class="w-full bg-primary py-3 rounded text-on-primary font-bold text-sm hover:brightness-110 transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">add</span>
+                New Event
+            </button>
+</div>
+</aside>
+<!-- TopNavBar (Authority Source: JSON) -->
+<header class="flex justify-between items-center px-8 h-16 w-full ml-64 max-w-[calc(100%-16rem)] fixed top-0 z-50 bg-[#191b22] dark:bg-[#191b22] font-['Inter'] tracking-tight">
+<div class="flex items-center gap-8">
+<div class="flex flex-col">
+<span class="text-xs uppercase text-slate-500 font-bold tracking-tighter">Current Session</span>
+<span class="text-[#adc6ff] font-semibold border-b-2 border-[#adc6ff] pb-0.5 leading-none">Main Stage Event</span>
+</div>
+<div class="h-8 w-px bg-outline-variant opacity-20"></div>
+<div class="flex items-center gap-2 text-secondary font-medium">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-secondary"></span>
+</span>
+<span class="text-sm">Live: 1,240</span>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-4 text-slate-400">
+<span class="material-symbols-outlined cursor-pointer hover:text-primary transition-colors">notifications</span>
+<span class="material-symbols-outlined cursor-pointer hover:text-primary transition-colors">settings</span>
+</div>
+<button class="bg-tertiary-container text-on-tertiary-container px-4 py-1.5 rounded font-black text-xs tracking-widest hover:scale-95 duration-150">
+                SOS
+            </button>
+<div class="w-10 h-10 rounded-full bg-surface-container-highest overflow-hidden border border-outline-variant/20">
+<img alt="Admin profile" class="w-full h-full object-cover" data-alt="professional portrait of a venue manager in a tech-focused dark environment with soft studio lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAuS5vbrThJxdlM2iD4a9dESavRG7RtiY81JUedhprWLs0v7ytytzhnadZxp4WeSZxqCQqzayxXEWxwKOU3ljlnUjbc69cPPMZGMqL9fkqFcCp1qk74A7lb_eT2fnN1KLbrxGX0l5m_wa4npUyZuUTFuK0K-b7-U8TdZoBBwd-MDyi1Hp4cMkFwXEZBwRQxtGVFaupmzQuxPiTcgQr6dSUWbWnWleLNKSEnVgfrA71L97fa5bhw006jkHx5RO1c3TWEZ1GF8pEXaSk"/>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="pt-24 pl-72 pr-8 pb-12 min-h-screen bg-surface-dim">
+<!-- Header Section (Kinetic Asymmetry) -->
+<section class="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+<div>
+<div class="flex items-center gap-3 mb-1">
+<h2 class="text-4xl font-extrabold text-on-surface tracking-tight">Staff On Ground</h2>
+<span class="bg-surface-container-high px-3 py-1 rounded-full text-secondary text-xs font-bold uppercase tracking-widest">245 Total</span>
+</div>
+<p class="text-on-surface-variant max-w-lg">Real-time personnel monitoring and deployment across all active zones. Optimized for immediate response logistics.</p>
+</div>
+<!-- Filters -->
+<div class="flex bg-surface-container-low p-1 rounded-lg gap-1 border border-outline-variant/10">
+<button class="px-6 py-2 rounded text-sm font-bold bg-surface-container-high text-primary">All</button>
+<button class="px-6 py-2 rounded text-sm font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high/50 transition-all">Security <span class="ml-1 text-[10px] bg-primary/20 text-primary px-1.5 rounded">112</span></button>
+<button class="px-6 py-2 rounded text-sm font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high/50 transition-all">Medical <span class="ml-1 text-[10px] bg-secondary/20 text-secondary px-1.5 rounded">48</span></button>
+<button class="px-6 py-2 rounded text-sm font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high/50 transition-all">Staff <span class="ml-1 text-[10px] bg-outline-variant/20 text-outline-variant px-1.5 rounded">85</span></button>
+</div>
+</section>
+<!-- Staff Grid (Bento Style) -->
+<div class="staff-grid-layout">
+<!-- Card 1: Security / Active -->
+<div class="bg-surface-container-low p-5 rounded-xl flex flex-col gap-4 border border-outline-variant/5 hover:bg-surface-container-high transition-all duration-300">
+<div class="flex justify-between items-start">
+<div class="flex gap-3">
+<img class="w-12 h-12 rounded object-cover" data-alt="portrait of a security officer in uniform, serious expression, professional lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDHaFFMrar-v_7MwlnI1-_b9Lk6oIsVVA4ugqJFt4RTNebi-wPJ_Opb0vS6gVHq3I-iLTsPr2yboQVCCQIXOgqYdVqH6mqfonwi0oHz_XGxqx7hUa5G-guISPUlYSWj30ZIQSyBj8WrZ4Ob_c01kwqeVFlbiSPc40ixpVqP4R4UwFRfWMX4PT1cYYRJFD-z4AANiTrTEZvwhEVICXUMIyjwvd5vw-Tw5Xx6D97p4cB3tkPahJOtpOybTN6OKjTIueEjultXfArAYfk"/>
+<div>
+<h4 class="font-bold text-on-surface">Marcus Chen</h4>
+<span class="text-[10px] font-black tracking-widest text-primary border border-primary/30 px-2 py-0.5 rounded uppercase">Security</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant text-sm cursor-pointer hover:text-on-surface">more_vert</span>
+</div>
+<div class="space-y-2">
+<div class="flex items-center gap-2 text-xs text-on-surface-variant">
+<span class="material-symbols-outlined text-sm">location_on</span>
+<span>Zone A1 - Main Entry</span>
+</div>
+<div class="flex items-center gap-2 text-xs">
+<div class="w-2 h-2 rounded-full bg-secondary"></div>
+<span class="text-secondary font-medium">Active</span>
+<span class="text-on-surface-variant opacity-40 ml-auto">Last update: 2m ago</span>
+</div>
+</div>
+<button class="mt-2 w-full py-2.5 rounded text-xs font-bold uppercase tracking-widest text-on-surface-variant border border-outline-variant/30 hover:bg-surface-container-highest hover:text-primary transition-all">Redeploy</button>
+</div>
+<!-- Card 2: Medical / Idle -->
+<div class="bg-surface-container-low p-5 rounded-xl flex flex-col gap-4 border border-outline-variant/5 hover:bg-surface-container-high transition-all duration-300">
+<div class="flex justify-between items-start">
+<div class="flex gap-3">
+<img class="w-12 h-12 rounded object-cover" data-alt="headshot of medical personnel, friendly expression, clean clinical background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCzO8_V8N8ALmf-UfmRtnS0K2oI7t-NDcCLwEYtaq-03kIkaM--ELS85grehdGZBTBPcmcJd5YSm1a2G0bxrom1OKLoH3SthSIfIpyDRhGZbq82B8qhvOGRalqp8ljkPKocDTWPCh6IWk96xZEYTTtNGcDNGGKxX0TLJtJRs0anvZRUzb2CaicGM2PEr7ZtXq6RXokcWwnUceOG8jQEYJEh9S5lRK0Cm6hplx86P5f-VnhvFRdf7EDUTVYEV3JDPc-ytUSV06npkUs"/>
+<div>
+<h4 class="font-bold text-on-surface">Sarah Jenkins</h4>
+<span class="text-[10px] font-black tracking-widest text-secondary border border-secondary/30 px-2 py-0.5 rounded uppercase">Medical</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant text-sm cursor-pointer hover:text-on-surface">more_vert</span>
+</div>
+<div class="space-y-2">
+<div class="flex items-center gap-2 text-xs text-on-surface-variant">
+<span class="material-symbols-outlined text-sm">location_on</span>
+<span>First Aid Post 4 - North</span>
+</div>
+<div class="flex items-center gap-2 text-xs">
+<div class="w-2 h-2 rounded-full bg-yellow-400"></div>
+<span class="text-yellow-400 font-medium">Idle</span>
+<span class="text-on-surface-variant opacity-40 ml-auto">Last update: 5m ago</span>
+</div>
+</div>
+<button class="mt-2 w-full py-2.5 rounded text-xs font-bold uppercase tracking-widest text-on-surface-variant border border-outline-variant/30 hover:bg-surface-container-highest hover:text-primary transition-all">Redeploy</button>
+</div>
+<!-- Card 3: Staff / Unresponsive -->
+<div class="bg-surface-container-low p-5 rounded-xl flex flex-col gap-4 border border-outline-variant/5 hover:bg-surface-container-high transition-all duration-300">
+<div class="flex justify-between items-start">
+<div class="flex gap-3">
+<img class="w-12 h-12 rounded object-cover" data-alt="portrait of a young man, professional neutral background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB_65dAsyd81jLA6ZfRg_w0KuW9_-DVOhX_QluhkwsD2LmnkWV7gVraBvZt3gOR9bT4JHUelSVjKSSpzpthJFy9nf6V_9o2vO2P1QFnYkzLlPInK65IOjgriugo7ouJBchRv6FVl6krgBnBbSyye-eyktDAlSuewlllKyTQ4BR7gtECVeLu1kaWK27IWD6pu0an7v_v4fIB586sZvBtenw-XZID5ABHTVA11kRUnME-YjdJy6evghtO4xOyB_aGA33NgQ06IMAnxDQ"/>
+<div>
+<h4 class="font-bold text-on-surface">David Rivera</h4>
+<span class="text-[10px] font-black tracking-widest text-outline px-2 py-0.5 rounded border border-outline/30 uppercase">Staff</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant text-sm cursor-pointer hover:text-on-surface">more_vert</span>
+</div>
+<div class="space-y-2">
+<div class="flex items-center gap-2 text-xs text-on-surface-variant">
+<span class="material-symbols-outlined text-sm">location_on</span>
+<span>Merch Booth 12 - South</span>
+</div>
+<div class="flex items-center gap-2 text-xs">
+<div class="w-2 h-2 rounded-full bg-tertiary"></div>
+<span class="text-tertiary font-medium">Unresponsive</span>
+<span class="text-on-surface-variant opacity-40 ml-auto">Last update: 12m ago</span>
+</div>
+</div>
+<button class="mt-2 w-full py-2.5 rounded text-xs font-bold uppercase tracking-widest text-on-surface-variant border border-outline-variant/30 bg-tertiary/10 text-tertiary hover:bg-tertiary hover:text-on-tertiary transition-all">Emergency Contact</button>
+</div>
+<!-- More Cards following same pattern -->
+<div class="bg-surface-container-low p-5 rounded-xl flex flex-col gap-4 border border-outline-variant/5 hover:bg-surface-container-high transition-all duration-300">
+<div class="flex justify-between items-start">
+<div class="flex gap-3">
+<img class="w-12 h-12 rounded object-cover" data-alt="professional staff member portrait, modern lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAyhbdiiRswgMaEzA3tUnumYKNfeSEa1J2Y3LYVSnsJhlXSTzJoHXKU6S0axw8Sm85qVhZqXIJG4oh83s5mXIeVW4k9wacAUWetTBhDZWCRRVxkVXDxrEkn5bPYgvSJJ8IRfiYYz9V4togxt74vAFpbtT2PG4BIHtRBq81Nv02E8dabXlT8EInGKRIXr7--ShvUaaiHWmultjpWE10LgSGOfnL7fsbmeAZfIdxC9Ia6Ctq8wV5RzGXybOuV03LERWsZY5xffC-zg3g"/>
+<div>
+<h4 class="font-bold text-on-surface">Elena Sokolov</h4>
+<span class="text-[10px] font-black tracking-widest text-primary border border-primary/30 px-2 py-0.5 rounded uppercase">Security</span>
+</div>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex items-center gap-2 text-xs text-on-surface-variant">
+<span class="material-symbols-outlined text-sm">location_on</span>
+<span>Backstage VIP - Left Wing</span>
+</div>
+<div class="flex items-center gap-2 text-xs">
+<div class="w-2 h-2 rounded-full bg-secondary"></div>
+<span class="text-secondary font-medium">Active</span>
+<span class="text-on-surface-variant opacity-40 ml-auto">Last update: 1m ago</span>
+</div>
+</div>
+<button class="mt-2 w-full py-2.5 rounded text-xs font-bold uppercase tracking-widest text-on-surface-variant border border-outline-variant/30 hover:bg-surface-container-highest hover:text-primary transition-all">Redeploy</button>
+</div>
+<div class="bg-surface-container-low p-5 rounded-xl flex flex-col gap-4 border border-outline-variant/5 hover:bg-surface-container-high transition-all duration-300">
+<div class="flex justify-between items-start">
+<div class="flex gap-3">
+<img class="w-12 h-12 rounded object-cover" data-alt="executive staff portrait, focused expression" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA2Ndl4UvYd6R_kFvfEd2IO6d02hmHgYEhioZgD6d0pfGfQ-p7-8yLTUhPr4c9KMLufXzwKq6e9nXXAfhQFxQeEsgjeoEkaqzLCn3ktF-IsePrHtL2U9mNTl3pEuJmB5RZ0FYAAuvjqiKkvk6AtjeRsp3GnF-8KG7-TRqrBX5wLy6wbOl2hVjIbczPaeCKfE87WrRFaplVd7BWDAPfwcKO-RQ4Ui-tNd_AV8Oaz_1Ds3MyeZ57b6Fdnj_gkQTuSRuUuBpEvMw8UiEw"/>
+<div>
+<h4 class="font-bold text-on-surface">James Wu</h4>
+<span class="text-[10px] font-black tracking-widest text-secondary border border-secondary/30 px-2 py-0.5 rounded uppercase">Medical</span>
+</div>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex items-center gap-2 text-xs text-on-surface-variant">
+<span class="material-symbols-outlined text-sm">location_on</span>
+<span>Roaming - Zone C Zone</span>
+</div>
+<div class="flex items-center gap-2 text-xs">
+<div class="w-2 h-2 rounded-full bg-secondary"></div>
+<span class="text-secondary font-medium">Active</span>
+<span class="text-on-surface-variant opacity-40 ml-auto">Last update: 30s ago</span>
+</div>
+</div>
+<button class="mt-2 w-full py-2.5 rounded text-xs font-bold uppercase tracking-widest text-on-surface-variant border border-outline-variant/30 hover:bg-surface-container-highest hover:text-primary transition-all">Redeploy</button>
+</div>
+<div class="bg-surface-container-low p-5 rounded-xl flex flex-col gap-4 border border-outline-variant/5 hover:bg-surface-container-high transition-all duration-300">
+<div class="flex justify-between items-start">
+<div class="flex gap-3">
+<img class="w-12 h-12 rounded object-cover" data-alt="energetic team member, modern aesthetic lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDuz_wy2MEPzmOTAAitCNAekMGIFUK3t99bcVye-OPJq68-lx_GVShexcYHL9RriK5yXSz9IEaR_YovPFux5ux408RNtiVgz3KTrScERJsEWlnIIgpSM21aK8xd8hCQVzJzNFe3iCedg9ZmBMnKUx7DtKYK1gu_9IVP5jH3rjWaY3xNlYLgUImRA3jrTWAfOfqhtX-xPa9P6tgprnEkTLNkUz8sirv9MI_iWl4hBBw9_cW6trQ6gmioTldaWrsgdPxIYY5g9EQoXsc"/>
+<div>
+<h4 class="font-bold text-on-surface">Maya Patel</h4>
+<span class="text-[10px] font-black tracking-widest text-outline px-2 py-0.5 rounded border border-outline/30 uppercase">Staff</span>
+</div>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex items-center gap-2 text-xs text-on-surface-variant">
+<span class="material-symbols-outlined text-sm">location_on</span>
+<span>Info Hub - Plaza B</span>
+</div>
+<div class="flex items-center gap-2 text-xs">
+<div class="w-2 h-2 rounded-full bg-secondary"></div>
+<span class="text-secondary font-medium">Active</span>
+<span class="text-on-surface-variant opacity-40 ml-auto">Last update: 4m ago</span>
+</div>
+</div>
+<button class="mt-2 w-full py-2.5 rounded text-xs font-bold uppercase tracking-widest text-on-surface-variant border border-outline-variant/30 hover:bg-surface-container-highest hover:text-primary transition-all">Redeploy</button>
+</div>
+<!-- Visual Filler Cards for Grid completion -->
+<div class="bg-surface-container-low p-5 rounded-xl flex flex-col gap-4 border border-outline-variant/5 hover:bg-surface-container-high transition-all duration-300">
+<div class="flex justify-between items-start">
+<div class="flex gap-3">
+<img class="w-12 h-12 rounded object-cover" data-alt="professional security personnel in low key lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBJj-MQJ9rI1mjiqeVHsySv4gPAXxMT4J3Gq26XsyZb3SWgsQ83-fPzI-j6ExGPG8-exfLW3Nezc34NZ-_Z1jaTs9j2_sXZ8UozrXiKEa816F2cyG_865-bjIuBFq-1gXGxjMUBM9u-c2q36dha52xR9CqFfPzT5s8BvmyMdJMN-N5-BLa0rFglWXjb0jZWIOf8vSYNZlUHYJ7hRFhZzBtCnU5Vfoik9JNYKEtj79Zcf67T_035x-Xf9zV7z_L7Q8ZKiPt1trU4x44"/>
+<div>
+<h4 class="font-bold text-on-surface">Robert King</h4>
+<span class="text-[10px] font-black tracking-widest text-primary border border-primary/30 px-2 py-0.5 rounded uppercase">Security</span>
+</div>
+</div>
+</div>
+<div class="space-y-2 text-on-surface-variant text-xs">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">location_on</span>
+<span>Floor Level - Pit A</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-secondary"></div>
+<span class="text-secondary font-medium">Active</span>
+</div>
+</div>
+<button class="mt-2 w-full py-2.5 rounded text-xs font-bold uppercase tracking-widest text-on-surface-variant border border-outline-variant/30 hover:bg-surface-container-highest transition-all">Redeploy</button>
+</div>
+<div class="bg-surface-container-low p-5 rounded-xl flex flex-col gap-4 border border-outline-variant/5 hover:bg-surface-container-high transition-all duration-300">
+<div class="flex justify-between items-start">
+<div class="flex gap-3">
+<img class="w-12 h-12 rounded object-cover" data-alt="portrait of female team member with technical gear" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAWrzkCcIwgxlEiJZCOGT3CmlhKGJRSexCkJVzgGbDxkg9EPNqin3FPtbtdmq8qC6vEVzrIE9wnoj4dMPFMZ6FrXVv9tgFrvC1Yk3fmXrVMhOk4d8f2NoozQ1gAq-8MBG58IDgUKB6MKDqc0eCF-QzYh2y2dfRVR3zAuwc3sz7nEm9_BCXvSjM5_YAmn_jSWURZMtCD18XZUpWacoRaa3GG-7TDmphF3sj50hhDLUupC676K8jsHYPvQim-DIP5oWamVMO_zmjZWSg"/>
+<div>
+<h4 class="font-bold text-on-surface">Lila Thorne</h4>
+<span class="text-[10px] font-black tracking-widest text-outline px-2 py-0.5 rounded border border-outline/30 uppercase">Staff</span>
+</div>
+</div>
+</div>
+<div class="space-y-2 text-on-surface-variant text-xs">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">location_on</span>
+<span>Artist Lounge</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-secondary"></div>
+<span class="text-secondary font-medium">Active</span>
+</div>
+</div>
+<button class="mt-2 w-full py-2.5 rounded text-xs font-bold uppercase tracking-widest text-on-surface-variant border border-outline-variant/30 hover:bg-surface-container-highest transition-all">Redeploy</button>
+</div>
+<div class="bg-surface-container-low p-5 rounded-xl flex flex-col gap-4 border border-outline-variant/5 hover:bg-surface-container-high transition-all duration-300">
+<div class="flex justify-between items-start">
+<div class="flex gap-3">
+<img class="w-12 h-12 rounded object-cover" data-alt="man in medical team uniform, hospital corridor background out of focus" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCLvaMc8RJA8l7K4hPPPk4sl21r9vNBvOFZgCU2Ql4VDqwFpbRA6FzdHWkvTQcckxLA7-dtgnVdODm4t79leBY2Q7tr-StbENZW41TXOR9560rzAH_UE4LxIq4OH3mlJ9rVWKuVznj0wCLX0WtFmvMeUhnMNhWhWxSdECTgthq0XdteM6wCfE_rIGNRn6SL5z4curXjHyVKROTEFcYnrM3J4CKSsQoqQIgaqJdKU3ZbFf0affhN9jH28zXbWwHEwrJ16c_xAsG4Zmw"/>
+<div>
+<h4 class="font-bold text-on-surface">Omar Farooq</h4>
+<span class="text-[10px] font-black tracking-widest text-secondary border border-secondary/30 px-2 py-0.5 rounded uppercase">Medical</span>
+</div>
+</div>
+</div>
+<div class="space-y-2 text-on-surface-variant text-xs">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">location_on</span>
+<span>First Aid Post 1 - Entry</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-yellow-400"></div>
+<span class="text-yellow-400 font-medium">Idle</span>
+</div>
+</div>
+<button class="mt-2 w-full py-2.5 rounded text-xs font-bold uppercase tracking-widest text-on-surface-variant border border-outline-variant/30 hover:bg-surface-container-highest transition-all">Redeploy</button>
+</div>
+</div>
+<!-- Density Footer Stats -->
+<section class="mt-12 grid grid-cols-1 md:grid-cols-4 gap-4">
+<div class="bg-surface-container-low p-6 rounded-xl border border-outline-variant/5">
+<p class="text-xs text-on-surface-variant uppercase font-bold tracking-widest mb-2">Security Coverage</p>
+<div class="flex items-end justify-between">
+<span class="text-3xl font-black text-on-surface leading-none">94%</span>
+<span class="text-secondary text-xs font-medium flex items-center gap-1"><span class="material-symbols-outlined text-xs">trending_up</span>Optimal</span>
+</div>
+<div class="w-full bg-surface-container-highest h-1.5 rounded-full mt-4 overflow-hidden">
+<div class="bg-primary h-full w-[94%]"></div>
+</div>
+</div>
+<div class="bg-surface-container-low p-6 rounded-xl border border-outline-variant/5">
+<p class="text-xs text-on-surface-variant uppercase font-bold tracking-widest mb-2">Medical Readiness</p>
+<div class="flex items-end justify-between">
+<span class="text-3xl font-black text-on-surface leading-none">100%</span>
+<span class="text-secondary text-xs font-medium">Standing By</span>
+</div>
+<div class="w-full bg-surface-container-highest h-1.5 rounded-full mt-4 overflow-hidden">
+<div class="bg-secondary h-full w-full"></div>
+</div>
+</div>
+<div class="bg-surface-container-low p-6 rounded-xl border border-outline-variant/5">
+<p class="text-xs text-on-surface-variant uppercase font-bold tracking-widest mb-2">Alert Response</p>
+<div class="flex items-end justify-between">
+<span class="text-3xl font-black text-on-surface leading-none">12s</span>
+<span class="text-on-surface-variant text-xs font-medium">Avg Time</span>
+</div>
+<div class="flex gap-1 mt-4">
+<div class="flex-1 bg-secondary h-1 rounded-full opacity-40"></div>
+<div class="flex-1 bg-secondary h-1 rounded-full opacity-80"></div>
+<div class="flex-1 bg-secondary h-1 rounded-full"></div>
+</div>
+</div>
+<div class="bg-surface-container-low p-6 rounded-xl border border-outline-variant/5">
+<p class="text-xs text-on-surface-variant uppercase font-bold tracking-widest mb-2">Critical Alerts</p>
+<div class="flex items-end justify-between">
+<span class="text-3xl font-black text-tertiary leading-none">0</span>
+<span class="text-secondary text-xs font-medium">Clear</span>
+</div>
+<div class="mt-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-sm">check_circle</span>
+<span class="text-[10px] text-on-surface-variant font-medium">All systems operational</span>
+</div>
+</div>
+</section>
+</main>
+<!-- Contextual FAB (Hidden on Staff page as per rules, but included if primary action is needed) -->
+<!-- Suppressed for focused journey -->
+</body></html>

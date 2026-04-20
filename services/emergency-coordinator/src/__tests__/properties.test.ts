@@ -80,7 +80,7 @@ describe('Property 14: Emergency Audit Log Completeness', () => {
             eventId: fc.uuid(),
             type: fc.constant('evacuation' as AuditEventType),
             timestamp: fc.date().map(d => d.toISOString()),
-            zoneId: fc.option(fc.uuid()),
+            zoneId: fc.option(fc.uuid(), { nil: undefined }),
             actorId: fc.uuid(),
           }),
           { minLength: 1, maxLength: 10 }

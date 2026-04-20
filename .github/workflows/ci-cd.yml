@@ -1,0 +1,163 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop, staging]
+  pull_request:
+    branches: [main, develop, staging]
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  # ==========================================================================
+  # LINT & TYPE CHECK
+  # ==========================================================================
+  lint-typecheck:
+    name: Lint & TypeScript Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run TypeScript compiler
+        run: npm run build
+      
+      - name: Check formatting (if available)
+        run: npm run lint || true
+
+  # ==========================================================================
+  # UNIT & INTEGRATION TESTS
+  # ==========================================================================
+  test:
+    name: Test Suite
+    runs-on: ubuntu-latest
+    needs: lint-typecheck
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: venueflow
+          POSTGRES_PASSWORD: venueflow_dev
+          POSTGRES_DB: venueflow
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run tests
+        run: npm test
+        env:
+          DATABASE_URL: postgresql://venueflow:venueflow_dev@localhost:5432/venueflow
+          REDIS_URL: redis://localhost:6379
+      
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        if: always()
+
+  # ==========================================================================
+  # BUILD DASHBOARD
+  # ==========================================================================
+  build-dashboard:
+    name: Build Dashboard
+    runs-on: ubuntu-latest
+    needs: lint-typecheck
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Build dashboard
+        run: npm run build:dashboard
+      
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: dashboard-build
+          path: apps/dashboard/dist/
+          retention-days: 5
+
+  # ==========================================================================
+  # DEPLOY TO VERCEL (Dashboard Only)
+  # ==========================================================================
+  deploy-vercel:
+    name: Deploy Dashboard to Vercel
+    runs-on: ubuntu-latest
+    needs: [build-dashboard, test]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Deploy to Vercel
+        uses: vercel/action@main
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          production: true
+        continue-on-error: true
+
+  # ==========================================================================
+  # NOTIFY
+  # ==========================================================================
+  notify:
+    name: Notify on Status
+    runs-on: ubuntu-latest
+    needs: [lint-typecheck, test, build-dashboard]
+    if: always()
+    
+    steps:
+      - name: Check job status
+        run: |
+          if [[ "${{ needs.lint-typecheck.result }}" == "failure" || \
+                "${{ needs.test.result }}" == "failure" || \
+                "${{ needs.build-dashboard.result }}" == "failure" ]]; then
+            echo "❌ Pipeline failed"
+            exit 1
+          else
+            echo "✅ Pipeline passed"
+          fi

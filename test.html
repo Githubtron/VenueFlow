@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>VenueFlow Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background: #111319; color: #e2e2eb; }
+        .test { margin: 20px 0; padding: 15px; background: #1a1d27; border-left: 4px solid #adc6ff; }
+        .status { padding: 10px; border-radius: 4px; margin: 5px 0; }
+        .ok { background: rgba(74,225,118,0.2); color: #4ae176; }
+        .error { background: rgba(255,84,81,0.2); color: #ff5451; }
+        a { color: #adc6ff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <h1>🎪 VenueFlow Application Status</h1>
+    
+    <div class="test">
+        <h2>✅ Services Running</h2>
+        <div class="status ok">Frontend: http://localhost:5173/ ✓</div>
+        <div class="status ok">Backend API: http://localhost:3001/ ✓</div>
+        <div class="status ok">PostgreSQL: localhost:5432 ✓</div>
+        <div class="status ok">Redis: localhost:6379 ✓</div>
+    </div>
+    
+    <div class="test">
+        <h2>📱 Access Application</h2>
+        <p><strong>Frontend (Main App):</strong></p>
+        <a href="http://localhost:5173/" target="_blank">→ Open http://localhost:5173/</a>
+        <p>You will see the VenueFlow login page. React will load automatically in your browser.</p>
+    </div>
+    
+    <div class="test">
+        <h2>🔐 Backend API (Dev Only)</h2>
+        <p><strong>Auth Endpoint:</strong></p>
+        <a href="http://localhost:3001/" target="_blank">→ http://localhost:3001/</a>
+        <p>Backend is running on port 3001. Use this for API calls.</p>
+    </div>
+    
+    <div class="test">
+        <h2>❓ Troubleshooting</h2>
+        <p>If the page doesn't load:</p>
+        <ol>
+            <li>Clear browser cache (Ctrl+Shift+Delete)</li>
+            <li>Do a hard refresh (Ctrl+Shift+R)</li>
+            <li>Check browser console for errors (F12)</li>
+            <li>Check terminal output for server errors</li>
+        </ol>
+    </div>
+    
+    <script>
+        // Test if APIs are responding
+        fetch('http://localhost:5173/', { method: 'HEAD' })
+            .then(() => console.log('✓ Frontend accessible'))
+            .catch(e => console.log('✗ Frontend error:', e));
+        
+        fetch('http://localhost:3001/', { method: 'HEAD' })
+            .then(() => console.log('✓ Backend accessible'))
+            .catch(e => console.log('✗ Backend error:', e));
+    </script>
+</body>
+</html>

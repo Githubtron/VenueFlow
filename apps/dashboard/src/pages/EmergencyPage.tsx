@@ -37,41 +37,45 @@ interface EmergencyUpdate {
   zones?: ZoneClearStatus[];
 }
 
-const styles: Record<string, React.CSSProperties> = {
-  page: { display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden', background: '#0f172a' },
-  body: { display: 'flex', flex: 1, overflow: 'hidden' },
-  main: { flex: 1, overflowY: 'auto', padding: 16, display: 'flex', flexDirection: 'column', gap: 16 },
-  sidebar: { width: 340, overflowY: 'auto', padding: 16, display: 'flex', flexDirection: 'column', gap: 16, borderLeft: '1px solid #2d3148' },
-  card: { background: '#1e293b', borderRadius: 8, padding: 16 },
-  cardTitle: { color: '#e2e8f0', fontSize: 14, fontWeight: 600, marginBottom: 12 },
-  sosList: { display: 'flex', flexDirection: 'column', gap: 8 },
-  sosItem: { background: '#0f172a', borderRadius: 6, padding: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderLeft: '3px solid #ef4444' },
-  sosInfo: { display: 'flex', flexDirection: 'column', gap: 2 },
-  sosId: { color: '#f1f5f9', fontSize: 13, fontWeight: 500 },
-  sosMeta: { color: '#94a3b8', fontSize: 11 },
-  resolveBtn: { background: '#16a34a', color: '#fff', border: 'none', borderRadius: 4, padding: '4px 10px', fontSize: 12, cursor: 'pointer' },
-  emptyState: { color: '#64748b', fontSize: 13, textAlign: 'center', padding: '24px 0' },
+const styles = {
+  page: { display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden', background: '#0f172a' } as React.CSSProperties,
+  body: { display: 'flex', flex: 1, overflow: 'hidden' } as React.CSSProperties,
+  main: { flex: 1, overflowY: 'auto', padding: 16, display: 'flex', flexDirection: 'column', gap: 16 } as React.CSSProperties,
+  sidebar: { width: 340, overflowY: 'auto', padding: 16, display: 'flex', flexDirection: 'column', gap: 16, borderLeft: '1px solid #2d3148' } as React.CSSProperties,
+  card: { background: '#1e293b', borderRadius: 8, padding: 16 } as React.CSSProperties,
+  cardTitle: { color: '#e2e8f0', fontSize: 14, fontWeight: 600, marginBottom: 12 } as React.CSSProperties,
+  sosList: { display: 'flex', flexDirection: 'column', gap: 8 } as React.CSSProperties,
+  sosItem: { background: '#0f172a', borderRadius: 6, padding: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderLeft: '3px solid #ef4444' } as React.CSSProperties,
+  sosInfo: { display: 'flex', flexDirection: 'column', gap: 2 } as React.CSSProperties,
+  sosId: { color: '#f1f5f9', fontSize: 13, fontWeight: 500 } as React.CSSProperties,
+  sosMeta: { color: '#94a3b8', fontSize: 11 } as React.CSSProperties,
+  resolveBtn: { background: '#16a34a', color: '#fff', border: 'none', borderRadius: 4, padding: '4px 10px', fontSize: 12, cursor: 'pointer' } as React.CSSProperties,
+  emptyState: { color: '#64748b', fontSize: 13, textAlign: 'center', padding: '24px 0' } as React.CSSProperties,
   holdBtn: {
     position: 'relative', overflow: 'hidden', background: '#dc2626', color: '#fff',
     border: 'none', borderRadius: 8, padding: '14px 24px', fontSize: 15, fontWeight: 700,
     cursor: 'pointer', width: '100%', userSelect: 'none',
-  },
+  } as React.CSSProperties,
   holdBtnDisabled: {
     position: 'relative', overflow: 'hidden', background: '#374151', color: '#6b7280',
     border: 'none', borderRadius: 8, padding: '14px 24px', fontSize: 15, fontWeight: 700,
     cursor: 'not-allowed', width: '100%', userSelect: 'none',
-  },
+  } as React.CSSProperties,
   holdProgress: {
     position: 'absolute', left: 0, top: 0, bottom: 0, background: 'rgba(255,255,255,0.25)',
     transition: 'width 0.1s linear', pointerEvents: 'none',
-  },
-  paBtn: { background: '#d97706', color: '#fff', border: 'none', borderRadius: 8, padding: '12px 24px', fontSize: 14, fontWeight: 600, cursor: 'pointer', width: '100%' },
-  zoneGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 },
+  } as React.CSSProperties,
+  paBtn: { background: '#d97706', color: '#fff', border: 'none', borderRadius: 8, padding: '12px 24px', fontSize: 14, fontWeight: 600, cursor: 'pointer', width: '100%' } as React.CSSProperties,
+  zoneGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 } as React.CSSProperties,
+  zoneName: { color: '#f1f5f9', fontSize: 12, fontWeight: 600 } as React.CSSProperties,
+  evacuationBanner: {
+    background: '#7f1d1d', border: '1px solid #ef4444', borderRadius: 8, padding: '12px 16px',
+    color: '#fca5a5', fontWeight: 700, fontSize: 14, textAlign: 'center',
+  } as React.CSSProperties,
   zoneCard: (cleared: boolean, bottleneck: boolean): React.CSSProperties => ({
     background: bottleneck ? '#7f1d1d' : cleared ? '#14532d' : '#1e3a5f',
     borderRadius: 6, padding: 10, border: `1px solid ${bottleneck ? '#ef4444' : cleared ? '#22c55e' : '#3b82f6'}`,
   }),
-  zoneName: { color: '#f1f5f9', fontSize: 12, fontWeight: 600 },
   zoneStatus: (cleared: boolean, bottleneck: boolean): React.CSSProperties => ({
     color: bottleneck ? '#fca5a5' : cleared ? '#86efac' : '#93c5fd', fontSize: 11, marginTop: 2,
   }),
@@ -80,11 +84,7 @@ const styles: Record<string, React.CSSProperties> = {
     background: type === 'medical' ? '#7c3aed' : type === 'security' ? '#dc2626' : '#d97706',
     color: '#fff', marginLeft: 6,
   }),
-  evacuationBanner: {
-    background: '#7f1d1d', border: '1px solid #ef4444', borderRadius: 8, padding: '12px 16px',
-    color: '#fca5a5', fontWeight: 700, fontSize: 14, textAlign: 'center',
-  },
-};
+} as const;
 
 const HOLD_DURATION_MS = 5000;
 
@@ -177,7 +177,11 @@ export function EmergencyPage() {
             <div style={styles.cardTitle}>
               Active SOS Events ({activeSos.length})
             </div>
-            {activeSos.length === 0 ? (
+            {!connected && activeSos.length === 0 ? (
+              <div style={styles.emptyState}>
+                ⏳ Connecting to SOS feed…
+              </div>
+            ) : activeSos.length === 0 ? (
               <div style={styles.emptyState}>No active SOS events</div>
             ) : (
               <div style={styles.sosList}>

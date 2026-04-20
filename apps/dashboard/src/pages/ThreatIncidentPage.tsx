@@ -56,27 +56,27 @@ const PRIORITY_COLORS: Record<IncidentPriority, string> = {
   low: '#22c55e',
 };
 
-const styles: Record<string, React.CSSProperties> = {
-  page: { display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden', background: '#0f172a' },
-  body: { display: 'flex', flex: 1, overflow: 'hidden' },
-  main: { flex: 1, overflowY: 'auto', padding: 16, display: 'flex', flexDirection: 'column', gap: 16 },
-  sidebar: { width: 360, overflowY: 'auto', padding: 16, display: 'flex', flexDirection: 'column', gap: 16, borderLeft: '1px solid #2d3148' },
-  card: { background: '#1e293b', borderRadius: 8, padding: 16 },
-  cardTitle: { color: '#e2e8f0', fontSize: 14, fontWeight: 600, marginBottom: 12 },
-  alertItem: { background: '#0f172a', borderRadius: 6, padding: 12, marginBottom: 8, borderLeft: '3px solid #ef4444' },
-  alertHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 },
-  alertType: { color: '#fca5a5', fontSize: 12, fontWeight: 600 },
-  alertZone: { color: '#94a3b8', fontSize: 11 },
-  alertDesc: { color: '#cbd5e1', fontSize: 12, marginTop: 4 },
-  alertMeta: { color: '#64748b', fontSize: 11, marginTop: 4 },
-  resolveBtn: { background: '#16a34a', color: '#fff', border: 'none', borderRadius: 4, padding: '3px 10px', fontSize: 11, cursor: 'pointer' },
-  investigateBtn: { background: '#2563eb', color: '#fff', border: 'none', borderRadius: 4, padding: '3px 10px', fontSize: 11, cursor: 'pointer', marginRight: 4 },
-  incidentItem: { background: '#0f172a', borderRadius: 6, padding: 12, marginBottom: 8 },
-  incidentHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
-  incidentTitle: { color: '#f1f5f9', fontSize: 13, fontWeight: 500 },
-  incidentDesc: { color: '#94a3b8', fontSize: 12, marginTop: 4 },
-  aiSummary: { background: '#1e3a5f', borderRadius: 4, padding: '6px 8px', marginTop: 6, color: '#93c5fd', fontSize: 11 },
-  emptyState: { color: '#64748b', fontSize: 13, textAlign: 'center', padding: '24px 0' },
+const styles = {
+  page: { display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden', background: '#0f172a' } as React.CSSProperties,
+  body: { display: 'flex', flex: 1, overflow: 'hidden' } as React.CSSProperties,
+  main: { flex: 1, overflowY: 'auto', padding: 16, display: 'flex', flexDirection: 'column', gap: 16 } as React.CSSProperties,
+  sidebar: { width: 360, overflowY: 'auto', padding: 16, display: 'flex', flexDirection: 'column', gap: 16, borderLeft: '1px solid #2d3148' } as React.CSSProperties,
+  card: { background: '#1e293b', borderRadius: 8, padding: 16 } as React.CSSProperties,
+  cardTitle: { color: '#e2e8f0', fontSize: 14, fontWeight: 600, marginBottom: 12 } as React.CSSProperties,
+  alertItem: { background: '#0f172a', borderRadius: 6, padding: 12, marginBottom: 8, borderLeft: '3px solid #ef4444' } as React.CSSProperties,
+  alertHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 } as React.CSSProperties,
+  alertType: { color: '#fca5a5', fontSize: 12, fontWeight: 600 } as React.CSSProperties,
+  alertZone: { color: '#94a3b8', fontSize: 11 } as React.CSSProperties,
+  alertDesc: { color: '#cbd5e1', fontSize: 12, marginTop: 4 } as React.CSSProperties,
+  alertMeta: { color: '#64748b', fontSize: 11, marginTop: 4 } as React.CSSProperties,
+  resolveBtn: { background: '#16a34a', color: '#fff', border: 'none', borderRadius: 4, padding: '3px 10px', fontSize: 11, cursor: 'pointer' } as React.CSSProperties,
+  investigateBtn: { background: '#2563eb', color: '#fff', border: 'none', borderRadius: 4, padding: '3px 10px', fontSize: 11, cursor: 'pointer', marginRight: 4 } as React.CSSProperties,
+  incidentItem: { background: '#0f172a', borderRadius: 6, padding: 12, marginBottom: 8 } as React.CSSProperties,
+  incidentHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 } as React.CSSProperties,
+  incidentTitle: { color: '#f1f5f9', fontSize: 13, fontWeight: 500 } as React.CSSProperties,
+  incidentDesc: { color: '#94a3b8', fontSize: 12, marginTop: 4 } as React.CSSProperties,
+  aiSummary: { background: '#1e3a5f', borderRadius: 4, padding: '6px 8px', marginTop: 6, color: '#93c5fd', fontSize: 11 } as React.CSSProperties,
+  emptyState: { color: '#64748b', fontSize: 13, textAlign: 'center', padding: '24px 0' } as React.CSSProperties,
   confidenceBadge: (confidence: number): React.CSSProperties => ({
     display: 'inline-block', borderRadius: 4, padding: '1px 6px', fontSize: 10, fontWeight: 600,
     background: confidence >= 0.8 ? '#7f1d1d' : confidence >= 0.5 ? '#78350f' : '#1e3a5f',
@@ -86,7 +86,7 @@ const styles: Record<string, React.CSSProperties> = {
     display: 'inline-block', width: 8, height: 8, borderRadius: '50%',
     background: PRIORITY_COLORS[priority], marginRight: 6,
   }),
-};
+} as const;
 
 export function ThreatIncidentPage() {
   const { user } = useAuth();
@@ -147,7 +147,11 @@ export function ThreatIncidentPage() {
             <div style={styles.cardTitle}>
               Active Threat Alerts ({activeThreats.length})
             </div>
-            {activeThreats.length === 0 ? (
+            {!connected && activeThreats.length === 0 ? (
+              <div style={styles.emptyState}>
+                ⏳ Connecting to threat feed…
+              </div>
+            ) : activeThreats.length === 0 ? (
               <div style={styles.emptyState}>No active threat alerts</div>
             ) : (
               activeThreats.map((alert) => (

@@ -52,34 +52,34 @@ const PRIORITY_COLORS: Record<TriagePriority, string> = {
   4: '#6b7280',
 };
 
-const styles: Record<string, React.CSSProperties> = {
-  page: { display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden', background: '#0f172a' },
-  body: { display: 'flex', flex: 1, overflow: 'hidden' },
-  main: { flex: 1, overflowY: 'auto', padding: 16, display: 'flex', flexDirection: 'column', gap: 16 },
-  sidebar: { width: 300, overflowY: 'auto', padding: 16, display: 'flex', flexDirection: 'column', gap: 16, borderLeft: '1px solid #2d3148' },
-  card: { background: '#1e293b', borderRadius: 8, padding: 16 },
-  cardTitle: { color: '#e2e8f0', fontSize: 14, fontWeight: 600, marginBottom: 12 },
-  patientItem: { background: '#0f172a', borderRadius: 6, padding: 12, marginBottom: 8 },
-  patientHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
-  patientCondition: { color: '#f1f5f9', fontSize: 13, fontWeight: 500 },
-  patientMeta: { color: '#64748b', fontSize: 11, marginTop: 2 },
-  actions: { display: 'flex', gap: 6, marginTop: 8 },
-  dispatchBtn: { background: '#2563eb', color: '#fff', border: 'none', borderRadius: 4, padding: '4px 12px', fontSize: 12, cursor: 'pointer' },
-  resolveBtn: { background: '#16a34a', color: '#fff', border: 'none', borderRadius: 4, padding: '4px 12px', fontSize: 12, cursor: 'pointer' },
-  notesInput: { background: '#1e293b', border: '1px solid #334155', borderRadius: 4, color: '#e2e8f0', fontSize: 12, padding: '4px 8px', width: '100%', marginTop: 6 },
-  stationItem: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid #1e293b' },
-  stationName: { color: '#cbd5e1', fontSize: 12 },
-  stationZone: { color: '#64748b', fontSize: 11 },
+const styles = {
+  page: { display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden', background: '#0f172a' } as React.CSSProperties,
+  body: { display: 'flex', flex: 1, overflow: 'hidden' } as React.CSSProperties,
+  main: { flex: 1, overflowY: 'auto', padding: 16, display: 'flex', flexDirection: 'column', gap: 16 } as React.CSSProperties,
+  sidebar: { width: 300, overflowY: 'auto', padding: 16, display: 'flex', flexDirection: 'column', gap: 16, borderLeft: '1px solid #2d3148' } as React.CSSProperties,
+  card: { background: '#1e293b', borderRadius: 8, padding: 16 } as React.CSSProperties,
+  cardTitle: { color: '#e2e8f0', fontSize: 14, fontWeight: 600, marginBottom: 12 } as React.CSSProperties,
+  patientItem: { background: '#0f172a', borderRadius: 6, padding: 12, marginBottom: 8 } as React.CSSProperties,
+  patientHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 } as React.CSSProperties,
+  patientCondition: { color: '#f1f5f9', fontSize: 13, fontWeight: 500 } as React.CSSProperties,
+  patientMeta: { color: '#64748b', fontSize: 11, marginTop: 2 } as React.CSSProperties,
+  actions: { display: 'flex', gap: 6, marginTop: 8 } as React.CSSProperties,
+  dispatchBtn: { background: '#2563eb', color: '#fff', border: 'none', borderRadius: 4, padding: '4px 12px', fontSize: 12, cursor: 'pointer' } as React.CSSProperties,
+  resolveBtn: { background: '#16a34a', color: '#fff', border: 'none', borderRadius: 4, padding: '4px 12px', fontSize: 12, cursor: 'pointer' } as React.CSSProperties,
+  notesInput: { background: '#1e293b', border: '1px solid #334155', borderRadius: 4, color: '#e2e8f0', fontSize: 12, padding: '4px 8px', width: '100%', marginTop: 6 } as React.CSSProperties,
+  stationItem: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid #1e293b' } as React.CSSProperties,
+  stationName: { color: '#cbd5e1', fontSize: 12 } as React.CSSProperties,
+  stationZone: { color: '#64748b', fontSize: 11 } as React.CSSProperties,
+  emptyState: { color: '#64748b', fontSize: 13, textAlign: 'center', padding: '24px 0' } as React.CSSProperties,
   availableDot: (available: boolean): React.CSSProperties => ({
     width: 8, height: 8, borderRadius: '50%', background: available ? '#22c55e' : '#ef4444',
     display: 'inline-block', marginRight: 6,
   }),
-  emptyState: { color: '#64748b', fontSize: 13, textAlign: 'center', padding: '24px 0' },
   priorityTag: (priority: TriagePriority): React.CSSProperties => ({
     display: 'inline-block', borderRadius: 4, padding: '2px 8px', fontSize: 11, fontWeight: 700,
     background: PRIORITY_COLORS[priority], color: '#fff',
   }),
-};
+} as const;
 
 export function MedicalTriagePage() {
   const { user } = useAuth();

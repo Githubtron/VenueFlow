@@ -8,7 +8,7 @@
 import React, { useState } from 'react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, LineChart, Line, Legend,
+  ResponsiveContainer,
 } from 'recharts';
 import { useAuth } from '../auth/useAuth';
 import { useApi, apiFetch } from '../hooks/useApi';
@@ -43,34 +43,34 @@ interface OfferMetric {
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
-const s: Record<string, React.CSSProperties> = {
-  page: { display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden', background: '#0f172a' },
-  body: { flex: 1, overflowY: 'auto', padding: 16, display: 'flex', flexDirection: 'column', gap: 16 },
-  card: { background: '#1e293b', borderRadius: 8, padding: 16 },
-  cardTitle: { color: '#e2e8f0', fontSize: 14, fontWeight: 600, marginBottom: 12 },
-  grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 10 },
+const s = {
+  page: { display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden', background: '#0f172a' } as React.CSSProperties,
+  body: { flex: 1, overflowY: 'auto', padding: 16, display: 'flex', flexDirection: 'column', gap: 16 } as React.CSSProperties,
+  card: { background: '#1e293b', borderRadius: 8, padding: 16 } as React.CSSProperties,
+  cardTitle: { color: '#e2e8f0', fontSize: 14, fontWeight: 600, marginBottom: 12 } as React.CSSProperties,
+  grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 10 } as React.CSSProperties,
+  sponsorName: { color: '#e2e8f0', fontSize: 13, fontWeight: 600 } as React.CSSProperties,
+  sponsorZone: { color: '#64748b', fontSize: 11, marginTop: 2 } as React.CSSProperties,
+  statRow: { display: 'flex', gap: 16, marginBottom: 16, flexWrap: 'wrap' as const } as React.CSSProperties,
+  statBox: { background: '#0f172a', borderRadius: 6, padding: '10px 16px', flex: 1, minWidth: 120 } as React.CSSProperties,
+  statValue: { color: '#e2e8f0', fontSize: 22, fontWeight: 700 } as React.CSSProperties,
+  statLabel: { color: '#64748b', fontSize: 11, marginTop: 2 } as React.CSSProperties,
+  table: { width: '100%', borderCollapse: 'collapse' as const } as React.CSSProperties,
+  th: { color: '#94a3b8', fontSize: 11, fontWeight: 600, textAlign: 'left' as const, padding: '6px 8px', borderBottom: '1px solid #334155' } as React.CSSProperties,
+  td: { color: '#cbd5e1', fontSize: 12, padding: '8px 8px', borderBottom: '1px solid #1e293b' } as React.CSSProperties,
+  btn: { background: '#2563eb', color: '#fff', border: 'none', borderRadius: 6, padding: '8px 18px', fontSize: 13, fontWeight: 600, cursor: 'pointer' } as React.CSSProperties,
+  emptyState: { color: '#64748b', fontSize: 13, textAlign: 'center', padding: '32px 0' } as React.CSSProperties,
+  feedback: { color: '#86efac', fontSize: 12, marginTop: 8 } as React.CSSProperties,
   sponsorCard: (selected: boolean): React.CSSProperties => ({
     background: selected ? '#1e3a5f' : '#0f172a', borderRadius: 8, padding: 14, cursor: 'pointer',
     border: `1px solid ${selected ? '#3b82f6' : '#334155'}`, transition: 'border-color 0.15s',
   }),
-  sponsorName: { color: '#e2e8f0', fontSize: 13, fontWeight: 600 },
-  sponsorZone: { color: '#64748b', fontSize: 11, marginTop: 2 },
-  statRow: { display: 'flex', gap: 16, marginBottom: 16, flexWrap: 'wrap' as const },
-  statBox: { background: '#0f172a', borderRadius: 6, padding: '10px 16px', flex: 1, minWidth: 120 },
-  statValue: { color: '#e2e8f0', fontSize: 22, fontWeight: 700 },
-  statLabel: { color: '#64748b', fontSize: 11, marginTop: 2 },
-  table: { width: '100%', borderCollapse: 'collapse' as const },
-  th: { color: '#94a3b8', fontSize: 11, fontWeight: 600, textAlign: 'left' as const, padding: '6px 8px', borderBottom: '1px solid #334155' },
-  td: { color: '#cbd5e1', fontSize: 12, padding: '8px 8px', borderBottom: '1px solid #1e293b' },
-  btn: { background: '#2563eb', color: '#fff', border: 'none', borderRadius: 6, padding: '8px 18px', fontSize: 13, fontWeight: 600, cursor: 'pointer' },
-  emptyState: { color: '#64748b', fontSize: 13, textAlign: 'center', padding: '32px 0' },
-  feedback: { color: '#86efac', fontSize: 12, marginTop: 8 },
   ctrBadge: (ctr: number): React.CSSProperties => ({
     display: 'inline-block', borderRadius: 4, padding: '1px 8px', fontSize: 11, fontWeight: 600,
     background: ctr >= 0.1 ? '#14532d' : ctr >= 0.05 ? '#78350f' : '#1e293b',
     color: ctr >= 0.1 ? '#86efac' : ctr >= 0.05 ? '#fcd34d' : '#94a3b8',
   }),
-};
+} as const;
 
 export function SponsorAnalyticsPage() {
   const { user } = useAuth();

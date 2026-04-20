@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>VenueFlow Command Center - Live Alerts</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "primary-fixed": "#d8e2ff",
+            "tertiary-fixed-dim": "#ffb3ad",
+            "secondary": "#4ae176",
+            "primary-fixed-dim": "#adc6ff",
+            "inverse-on-surface": "#2e3037",
+            "surface-container": "#1e1f26",
+            "primary": "#adc6ff",
+            "on-secondary": "#003915",
+            "on-error-container": "#ffdad6",
+            "on-tertiary": "#68000a",
+            "secondary-container": "#00b954",
+            "on-secondary-fixed-variant": "#005321",
+            "primary-container": "#4d8eff",
+            "on-secondary-fixed": "#002109",
+            "surface-tint": "#adc6ff",
+            "secondary-fixed": "#6bff8f",
+            "on-primary-fixed": "#001a42",
+            "on-background": "#e2e2eb",
+            "surface": "#111319",
+            "on-primary": "#002e6a",
+            "tertiary-fixed": "#ffdad7",
+            "tertiary-container": "#ff5451",
+            "on-tertiary-fixed-variant": "#930013",
+            "on-tertiary-fixed": "#410004",
+            "outline-variant": "#424754",
+            "surface-variant": "#33343b",
+            "surface-container-highest": "#33343b",
+            "on-error": "#690005",
+            "on-surface": "#e2e2eb",
+            "error-container": "#93000a",
+            "inverse-surface": "#e2e2eb",
+            "tertiary": "#ffb3ad",
+            "on-primary-container": "#00285d",
+            "inverse-primary": "#005ac2",
+            "secondary-fixed-dim": "#4ae176",
+            "surface-container-low": "#191b22",
+            "on-surface-variant": "#c2c6d6",
+            "on-tertiary-container": "#5c0008",
+            "on-secondary-container": "#004119",
+            "outline": "#8c909f",
+            "surface-dim": "#111319",
+            "surface-container-high": "#282a30",
+            "surface-container-lowest": "#0c0e14",
+            "surface-bright": "#373940",
+            "background": "#111319",
+            "error": "#ffb4ab",
+            "on-primary-fixed-variant": "#004395"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          "fontFamily": {
+            "headline": ["Inter"],
+            "body": ["Inter"],
+            "label": ["Inter"]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #33343b; border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: #424754; }
+  </style>
+</head>
+<body class="bg-surface-dim text-on-surface font-body overflow-hidden">
+<!-- TopNavBar -->
+<header class="fixed top-0 w-full z-50 h-16 flex justify-between items-center px-6 bg-[#111319] border-b border-[#ffffff0f] font-['Inter'] tracking-tight antialiased">
+<div class="flex items-center gap-8">
+<span class="text-lg font-bold tracking-tighter text-[#e2e2eb]">VenueFlow</span>
+<nav class="hidden md:flex gap-6 items-center h-16">
+<a class="text-[#90909a] hover:text-[#e2e2eb] transition-all duration-200" href="#">Live View</a>
+<a class="text-[#adc6ff] border-b-2 border-[#adc6ff] pb-1 font-medium" href="#">Alerts</a>
+<a class="text-[#90909a] hover:text-[#e2e2eb] transition-all duration-200" href="#">Management</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="bg-[#282a30] px-3 py-1 rounded-full flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-secondary animate-pulse"></div>
+<span class="text-[10px] font-bold text-on-surface tracking-widest uppercase">14,203 LIVE</span>
+</div>
+<button class="bg-tertiary-container text-on-tertiary-container px-3 py-1 text-xs font-black tracking-widest rounded transition-all duration-200 active:scale-95">SOS</button>
+<div class="flex items-center gap-2 border-l border-[#ffffff0f] pl-4">
+<span class="material-symbols-outlined text-[#90909a] hover:text-[#adc6ff] cursor-pointer">notifications</span>
+<span class="material-symbols-outlined text-[#90909a] hover:text-[#adc6ff] cursor-pointer">settings</span>
+<div class="w-8 h-8 rounded-full bg-surface-container-high overflow-hidden border border-[#ffffff1a]">
+<img alt="Operator Profile" data-alt="professional headshot of a security operations manager with a confident expression and sharp corporate attire" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBYlO7vkjoElVYmL4GtVGguUIUBcNVyBw54pUnq8uyXEJp3CUJjagJ2BzLB2BonawtNHrkiGJir8RPzpgW6RXXoFgIRCMbX4FFNXml-wacx8TXJJZ7PsNLNGZkDOhDhEmTDtdj01ckW8ssDOd-yt5jz68YniOIcrF3gLfPXAtjvzsAg-661heyoFI_G3CCj2YnWW6Pos0-vNSz6hVndmssv4TgaS7I8RAlVS9eph05_pq5Z4BpJHlWhr_wpcjip9OLv1Vxd3ueaXlQ"/>
+</div>
+</div>
+</div>
+</header>
+<div class="flex h-screen pt-16">
+<!-- SideNavBar -->
+<aside class="h-full w-64 border-r border-[#ffffff0f] bg-[#111319] flex flex-col pt-4 pb-6 font-['Inter'] text-sm font-medium">
+<div class="px-6 mb-8">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-primary-container flex items-center justify-center text-on-primary-container">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">security</span>
+</div>
+<div>
+<h3 class="text-[#e2e2eb] font-bold text-sm tracking-tight leading-none">Command Center</h3>
+<p class="text-[10px] text-[#90909a] uppercase tracking-tighter mt-1">Live Operations</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center text-[#90909a] py-3 px-6 hover:bg-[#1c1e26] hover:text-[#e2e2eb] transition-all" href="#">
+<span class="material-symbols-outlined mr-3">dashboard</span>
+          Dashboard
+        </a>
+<a class="flex items-center text-[#90909a] py-3 px-6 hover:bg-[#1c1e26] hover:text-[#e2e2eb] transition-all" href="#">
+<span class="material-symbols-outlined mr-3">texture</span>
+          Heatmap
+        </a>
+<a class="flex items-center text-[#90909a] py-3 px-6 hover:bg-[#1c1e26] hover:text-[#e2e2eb] transition-all" href="#">
+<span class="material-symbols-outlined mr-3">door_front</span>
+          Gates
+        </a>
+<a class="flex items-center bg-[#282a30] text-[#adc6ff] border-r-4 border-primary py-3 px-6 mr-0" href="#">
+<span class="material-symbols-outlined mr-3" style="font-variation-settings: 'FILL' 1;">warning</span>
+          Alerts
+        </a>
+<a class="flex items-center text-[#90909a] py-3 px-6 hover:bg-[#1c1e26] hover:text-[#e2e2eb] transition-all" href="#">
+<span class="material-symbols-outlined mr-3">groups</span>
+          Staff
+        </a>
+<a class="flex items-center text-[#90909a] py-3 px-6 hover:bg-[#1c1e26] hover:text-[#e2e2eb] transition-all" href="#">
+<span class="material-symbols-outlined mr-3">analytics</span>
+          Analytics
+        </a>
+</nav>
+<div class="px-4 mt-6">
+<button class="w-full bg-[#1c1e26] border border-[#ffffff0f] text-[#adc6ff] py-2 rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-[#282a30] transition-all">
+          Generate Report
+        </button>
+</div>
+<div class="mt-auto pt-6 border-t border-[#ffffff0f]">
+<a class="flex items-center text-[#90909a] py-2 px-6 hover:text-[#e2e2eb]" href="#">
+<span class="material-symbols-outlined mr-3 text-sm">help</span>
+          Support
+        </a>
+<a class="flex items-center text-[#90909a] py-2 px-6 hover:text-[#e2e2eb]" href="#">
+<span class="material-symbols-outlined mr-3 text-sm">dns</span>
+          System Status
+        </a>
+</div>
+</aside>
+<!-- Main Content: Live Alerts Panel -->
+<main class="flex-1 bg-surface-dim flex flex-col h-full relative">
+<!-- Background Texture -->
+<div class="absolute inset-0 opacity-[0.03] pointer-events-none" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCpiO8VmFpQ6UycRZ2VU9qac9i7XC1wJZUlXzqgm3Mrwv2U6AE7aJr4OdKvFzCJjTlSgLhgJybco6FszZ-XasmYOPZSWD5RpV_Sg3rEFt7SxEyrPsW2Y97_lMHJvxaaodifJ4LYLCKMag_AnhdFZybicoWsvT98LGA8hC5Pt4-I5AFhG3-CYGx3iCCCvOYO7cPAtgphPIZ9IyhvgGvO5CU-gFLEoEQQLEX6vM1olwEijRfeRA10JG_2G7txzs_Mv7BmVIsfFdRWPG8');"></div>
+<div class="flex-1 flex flex-col max-w-5xl mx-auto w-full px-8 py-8 relative z-10 overflow-hidden">
+<!-- Header Section -->
+<div class="flex justify-between items-end mb-8">
+<div class="space-y-1">
+<div class="flex items-center gap-3">
+<h1 class="text-4xl font-black text-on-surface tracking-tighter">Live Alerts</h1>
+<span class="bg-tertiary text-on-tertiary px-2 py-0.5 rounded text-sm font-black tracking-tight">12</span>
+</div>
+<p class="text-on-surface-variant text-sm font-medium">Monitoring 24 sectors across Main Arena and Concourse</p>
+</div>
+<div class="flex gap-2">
+<button class="bg-surface-container-high text-on-surface-variant px-4 py-2 rounded font-bold text-xs uppercase tracking-widest hover:text-on-surface transition-colors">History</button>
+<button class="bg-primary text-on-primary px-4 py-2 rounded font-black text-xs uppercase tracking-widest hover:shadow-[0_0_20px_rgba(173,198,255,0.3)] transition-all">Mark All Resolved</button>
+</div>
+</div>
+<!-- Alerts Scrollable Area -->
+<div class="flex-1 overflow-y-auto pr-4 -mr-4 space-y-4">
+<!-- HIGH Priority Alert -->
+<div class="bg-[#1a1d27] rounded-lg border-l-4 border-tertiary shadow-[0_0_15px_rgba(255,179,173,0.05)] flex items-center p-5 transition-all hover:bg-[#212431] group">
+<div class="w-12 h-12 rounded bg-tertiary-container/20 flex items-center justify-center text-tertiary mr-5">
+<span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">sos</span>
+</div>
+<div class="flex-1">
+<div class="flex items-center gap-3 mb-1">
+<h3 class="text-on-surface font-bold text-lg tracking-tight leading-none">Unauthorized Access</h3>
+<span class="text-[10px] font-black bg-error-container text-on-error-container px-2 py-0.5 rounded uppercase tracking-widest">HIGH</span>
+</div>
+<div class="flex items-center text-on-surface-variant text-xs gap-4">
+<span class="flex items-center"><span class="material-symbols-outlined text-sm mr-1">location_on</span> Zone B2 - VIP Lounge</span>
+<span class="flex items-center"><span class="material-symbols-outlined text-sm mr-1">schedule</span> 2 min ago</span>
+</div>
+</div>
+<button class="bg-surface-container-highest text-on-surface-variant px-4 py-2 rounded text-[10px] font-black uppercase tracking-widest hover:bg-tertiary hover:text-on-tertiary transition-all">Resolve</button>
+</div>
+<!-- HIGH Priority Alert -->
+<div class="bg-[#1a1d27] rounded-lg border-l-4 border-tertiary shadow-[0_0_15px_rgba(255,179,173,0.05)] flex items-center p-5 transition-all hover:bg-[#212431]">
+<div class="w-12 h-12 rounded bg-tertiary-container/20 flex items-center justify-center text-tertiary mr-5">
+<span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">groups</span>
+</div>
+<div class="flex-1">
+<div class="flex items-center gap-3 mb-1">
+<h3 class="text-on-surface font-bold text-lg tracking-tight leading-none">Crowd Density Alert</h3>
+<span class="text-[10px] font-black bg-error-container text-on-error-container px-2 py-0.5 rounded uppercase tracking-widest">HIGH</span>
+</div>
+<div class="flex items-center text-on-surface-variant text-xs gap-4">
+<span class="flex items-center"><span class="material-symbols-outlined text-sm mr-1">location_on</span> Gate 4 - Entry Flow</span>
+<span class="flex items-center"><span class="material-symbols-outlined text-sm mr-1">schedule</span> 5 min ago</span>
+</div>
+</div>
+<button class="bg-surface-container-highest text-on-surface-variant px-4 py-2 rounded text-[10px] font-black uppercase tracking-widest hover:bg-tertiary hover:text-on-tertiary transition-all">Resolve</button>
+</div>
+<!-- MEDIUM Priority Alert -->
+<div class="bg-[#1a1d27] rounded-lg border-l-4 border-[#ffb347] flex items-center p-5 transition-all hover:bg-[#212431]">
+<div class="w-12 h-12 rounded bg-[#ffb3471a] flex items-center justify-center text-[#ffb347] mr-5">
+<span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">warning</span>
+</div>
+<div class="flex-1">
+<div class="flex items-center gap-3 mb-1">
+<h3 class="text-on-surface font-bold text-lg tracking-tight leading-none">Gate Sensor Malfunction</h3>
+<span class="text-[10px] font-black bg-[#ffb34733] text-[#ffb347] px-2 py-0.5 rounded uppercase tracking-widest">MEDIUM</span>
+</div>
+<div class="flex items-center text-on-surface-variant text-xs gap-4">
+<span class="flex items-center"><span class="material-symbols-outlined text-sm mr-1">location_on</span> North Concourse Escalator</span>
+<span class="flex items-center"><span class="material-symbols-outlined text-sm mr-1">schedule</span> 12 min ago</span>
+</div>
+</div>
+<button class="bg-surface-container-highest text-on-surface-variant px-4 py-2 rounded text-[10px] font-black uppercase tracking-widest hover:bg-[#ffb347] hover:text-black transition-all">Resolve</button>
+</div>
+<!-- LOW Priority Alert -->
+<div class="bg-[#1a1d27] rounded-lg border-l-4 border-outline flex items-center p-5 transition-all hover:bg-[#212431]">
+<div class="w-12 h-12 rounded bg-surface-container-high flex items-center justify-center text-outline mr-5">
+<span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">info</span>
+</div>
+<div class="flex-1">
+<div class="flex items-center gap-3 mb-1">
+<h3 class="text-on-surface font-bold text-lg tracking-tight leading-none">Supply Low: Cleaning Station 4</h3>
+<span class="text-[10px] font-black bg-surface-container-high text-outline px-2 py-0.5 rounded uppercase tracking-widest">LOW</span>
+</div>
+<div class="flex items-center text-on-surface-variant text-xs gap-4">
+<span class="flex items-center"><span class="material-symbols-outlined text-sm mr-1">location_on</span> Main Concourse - Level 1</span>
+<span class="flex items-center"><span class="material-symbols-outlined text-sm mr-1">schedule</span> 45 min ago</span>
+</div>
+</div>
+<button class="bg-surface-container-highest text-on-surface-variant px-4 py-2 rounded text-[10px] font-black uppercase tracking-widest hover:bg-outline hover:text-surface-dim transition-all">Resolve</button>
+</div>
+<!-- MEDIUM Priority Alert -->
+<div class="bg-[#1a1d27] rounded-lg border-l-4 border-[#ffb347] flex items-center p-5 transition-all hover:bg-[#212431]">
+<div class="w-12 h-12 rounded bg-[#ffb3471a] flex items-center justify-center text-[#ffb347] mr-5">
+<span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">medical_services</span>
+</div>
+<div class="flex-1">
+<div class="flex items-center gap-3 mb-1">
+<h3 class="text-on-surface font-bold text-lg tracking-tight leading-none">First Aid Requested</h3>
+<span class="text-[10px] font-black bg-[#ffb34733] text-[#ffb347] px-2 py-0.5 rounded uppercase tracking-widest">MEDIUM</span>
+</div>
+<div class="flex items-center text-on-surface-variant text-xs gap-4">
+<span class="flex items-center"><span class="material-symbols-outlined text-sm mr-1">location_on</span> Section 104 - Row K</span>
+<span class="flex items-center"><span class="material-symbols-outlined text-sm mr-1">schedule</span> 1 hr ago</span>
+</div>
+</div>
+<button class="bg-surface-container-highest text-on-surface-variant px-4 py-2 rounded text-[10px] font-black uppercase tracking-widest hover:bg-[#ffb347] hover:text-black transition-all">Resolve</button>
+</div>
+<!-- LOW Priority Alert -->
+<div class="bg-[#1a1d27] rounded-lg border-l-4 border-outline flex items-center p-5 transition-all hover:bg-[#212431]">
+<div class="w-12 h-12 rounded bg-surface-container-high flex items-center justify-center text-outline mr-5">
+<span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">stadium</span>
+</div>
+<div class="flex-1">
+<div class="flex items-center gap-3 mb-1">
+<h3 class="text-on-surface font-bold text-lg tracking-tight leading-none">Arena Lighting Sync Delay</h3>
+<span class="text-[10px] font-black bg-surface-container-high text-outline px-2 py-0.5 rounded uppercase tracking-widest">LOW</span>
+</div>
+<div class="flex items-center text-on-surface-variant text-xs gap-4">
+<span class="flex items-center"><span class="material-symbols-outlined text-sm mr-1">location_on</span> Lighting Rig - Control Room</span>
+<span class="flex items-center"><span class="material-symbols-outlined text-sm mr-1">schedule</span> 2 hrs ago</span>
+</div>
+</div>
+<button class="bg-surface-container-highest text-on-surface-variant px-4 py-2 rounded text-[10px] font-black uppercase tracking-widest hover:bg-outline hover:text-surface-dim transition-all">Resolve</button>
+</div>
+</div>
+<!-- Footer / Insight Bar -->
+<div class="mt-8 grid grid-cols-3 gap-6 p-6 bg-[#1a1d27] rounded-xl border border-[#ffffff0f]">
+<div class="text-center border-r border-[#ffffff0f]">
+<p class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold mb-1">Active Response Teams</p>
+<p class="text-2xl font-black text-secondary">08 / 12</p>
+</div>
+<div class="text-center border-r border-[#ffffff0f]">
+<p class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold mb-1">Avg Resolution Time</p>
+<p class="text-2xl font-black text-primary">4m 22s</p>
+</div>
+<div class="text-center">
+<p class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold mb-1">Risk Index</p>
+<p class="text-2xl font-black text-tertiary">STABLE</p>
+</div>
+</div>
+</div>
+<!-- Live Map Preview Overlay (Glassmorphism card) -->
+<div class="absolute bottom-8 right-8 w-64 h-48 rounded-xl overflow-hidden shadow-2xl border border-[#ffffff1a] backdrop-blur-md bg-surface-container-highest/60 group">
+<div class="absolute inset-0 bg-cover bg-center opacity-40 group-hover:opacity-60 transition-opacity" data-alt="simplified top-down 3D architectural floor plan of a stadium showing crowd flow and colored heat zones" data-location="Los Angeles" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDotB0XwfIeyiTFmD8eaY2r1BSX6cPZcrAcRXflLxoIxTyNGsHsGNaLythNefDCJbk9H48PCp9G_pvbBV986a4XgDj9qU4ubhxLg67PiFcXkCJ1DVjRZzNIvQ2090hBbGYLJb8Rw8d-2lK4WxsKKAHbZTv5m60HzbyR4y3RrVtrkKfFgyJACPnAc6gxDAPVUq7YY2wKpkbHopoev--vnbc85l_R87BPCVWy09GW_ggR80bl000Sgyh0bHde0LNn9eE6wP3GwDnnO7U')"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-dim to-transparent"></div>
+<div class="absolute bottom-3 left-3">
+<p class="text-[10px] font-black text-white uppercase tracking-widest">Arena Overview</p>
+<p class="text-xs text-secondary-fixed flex items-center font-bold">
+<span class="w-2 h-2 rounded-full bg-secondary-fixed mr-2"></span>
+            All Zones Calibrated
+          </p>
+</div>
+<button class="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-all">
+<span class="material-symbols-outlined text-sm">open_in_full</span>
+</button>
+</div>
+</main>
+</div>
+</body></html>

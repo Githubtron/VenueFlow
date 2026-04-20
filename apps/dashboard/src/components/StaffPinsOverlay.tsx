@@ -1,4 +1,4 @@
-import React from 'react';
+
 
 export interface StaffLocation {
   staffId: string;
@@ -15,91 +15,110 @@ interface StaffPinsOverlayProps {
   highlightZoneId?: string;
 }
 
-const SPEC_COLORS: Record<string, string> = {
-  first_aid: '#ef4444',
-  security: '#3b82f6',
-  operations: '#f59e0b',
-  general: '#94a3b8',
+const SPEC_CONFIG: Record<string, { color: string; label: string }> = {
+  first_aid:     { color: '#4ae176', label: 'Medical' },
+  security:      { color: '#adc6ff', label: 'Security' },
+  crowd_control: { color: '#adc6ff', label: 'Security' },
+  operations:    { color: '#ffb786', label: 'Ops' },
+  general:       { color: '#8c909f', label: 'Staff' },
 };
 
-const styles: Record<string, React.CSSProperties> = {
-  container: {
-    background: '#1a1d27',
-    border: '1px solid #2d3148',
-    borderRadius: 8,
-    overflow: 'hidden',
-  },
-  header: {
-    padding: '12px 16px',
-    background: '#1e2235',
-    borderBottom: '1px solid #2d3148',
-    fontSize: 14,
-    fontWeight: 600,
-    color: '#e2e8f0',
-  },
-  list: { maxHeight: 280, overflowY: 'auto' },
-  item: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 10,
-    padding: '10px 16px',
-    borderBottom: '1px solid #1e2235',
-  },
-  itemHighlighted: {
-    background: 'rgba(124,106,247,0.08)',
-  },
-  pin: {
-    width: 10,
-    height: 10,
-    borderRadius: '50%',
-    flexShrink: 0,
-  },
-  name: { fontSize: 13, color: '#e2e8f0', flex: 1 },
-  zone: { fontSize: 11, color: '#475569' },
-  spec: { fontSize: 10, padding: '2px 6px', borderRadius: 10, fontWeight: 600 },
-  empty: { padding: 24, textAlign: 'center', color: '#475569', fontSize: 13 },
-};
+function getSpec(spec?: string) {
+  return SPEC_CONFIG[spec ?? 'general'] ?? SPEC_CONFIG['general']!;
+}
 
 export function StaffPinsOverlay({ staffLocations, highlightZoneId }: StaffPinsOverlayProps) {
   return (
-    <section style={styles.container} aria-label="Staff locations">
-      <div style={styles.header}>
-        Staff Locations ({staffLocations.length})
+    <section aria-label="Staff locations">
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+        <span style={{ fontSize: 10, fontWeight: 900, color: '#c2c6d6', letterSpacing: '0.2em', textTransform: 'uppercase' }}>
+          Staff On Ground
+        </span>
+        <span style={{
+          background: '#282a30', color: '#4ae176',
+          borderRadius: 4, padding: '2px 8px',
+          fontSize: 10, fontWeight: 900,
+        }}>
+          {staffLocations.length} Total
+        </span>
       </div>
+
       {staffLocations.length === 0 ? (
-        <div style={styles.empty}>No staff location data</div>
+        <div style={{
+          background: '#191b22', borderRadius: 10, padding: '20px 16px',
+          textAlign: 'center', color: '#424754', fontSize: 12,
+        }}>
+          No staff location data
+        </div>
       ) : (
-        <ul style={styles.list} role="list">
-          {staffLocations.map((staff) => {
-            const color = SPEC_COLORS[staff.specialization ?? 'general'] ?? '#94a3b8';
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          {staffLocations.map(staff => {
+            const spec = getSpec(staff.specialization);
             const isHighlighted = highlightZoneId && staff.zoneId === highlightZoneId;
+
             return (
-              <li
+              <div
                 key={staff.staffId}
-                style={{
-                  ...styles.item,
-                  ...(isHighlighted ? styles.itemHighlighted : {}),
-                }}
                 role="listitem"
                 aria-label={`${staff.name} in ${staff.zoneName ?? staff.zoneId}`}
+                style={{
+                  background: isHighlighted ? '#282a30' : '#191b22',
+                  borderRadius: 8,
+                  padding: '10px 12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 10,
+                  transition: 'background 0.15s',
+                }}
               >
-                <span
-                  style={{ ...styles.pin, background: color }}
-                  aria-hidden="true"
-                />
-                <span style={styles.name}>{staff.name}</span>
-                <span style={styles.zone}>{staff.zoneName ?? staff.zoneId}</span>
-                {staff.specialization && (
-                  <span
-                    style={{ ...styles.spec, background: color + '22', color }}
-                  >
-                    {staff.specialization.replace('_', ' ')}
+                {/* Avatar */}
+                <div style={{
+                  width: 32, height: 32, borderRadius: 6,
+                  background: `${spec.color}18`,
+                  border: `1px solid ${spec.color}33`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 12, fontWeight: 900, color: spec.color, flexShrink: 0,
+                }}>
+                  {staff.name[0]}
+                </div>
+
+                {/* Info */}
+                <div style={{ flex: 1, overflow: 'hidden' }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: '#e2e2eb', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {staff.name}
+                  </div>
+                  <div style={{ fontSize: 10, color: '#8c909f', marginTop: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {staff.zoneName ?? staff.zoneId}
+                  </div>
+                </div>
+
+                {/* Status + spec */}
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 3, flexShrink: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <span style={{
+                      width: 6, height: 6, borderRadius: '50%',
+                      background: staff.isAvailable ? '#4ae176' : '#ffb3ad',
+                      display: 'inline-block',
+                    }} />
+                    <span style={{ fontSize: 9, fontWeight: 700, color: staff.isAvailable ? '#4ae176' : '#ffb3ad' }}>
+                      {staff.isAvailable ? 'Active' : 'Busy'}
+                    </span>
+                  </div>
+                  <span style={{
+                    fontSize: 8, fontWeight: 900,
+                    color: spec.color,
+                    background: `${spec.color}18`,
+                    padding: '1px 5px', borderRadius: 3,
+                    textTransform: 'uppercase', letterSpacing: '0.1em',
+                  }}>
+                    {spec.label}
                   </span>
-                )}
-              </li>
+                </div>
+              </div>
             );
           })}
-        </ul>
+        </div>
       )}
     </section>
   );

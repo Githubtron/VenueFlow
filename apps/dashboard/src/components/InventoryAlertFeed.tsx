@@ -1,4 +1,4 @@
-import React from 'react';
+
 
 export interface InventoryAlert {
   alertId: string;
@@ -15,88 +15,153 @@ interface InventoryAlertFeedProps {
   alerts: InventoryAlert[];
 }
 
-const styles: Record<string, React.CSSProperties> = {
-  container: {
-    background: '#1a1d27',
-    border: '1px solid #2d3148',
-    borderRadius: 8,
-    overflow: 'hidden',
-  },
-  header: {
-    padding: '12px 16px',
-    background: '#1e2235',
-    borderBottom: '1px solid #2d3148',
-    fontSize: 14,
-    fontWeight: 600,
-    color: '#e2e8f0',
-    display: 'flex',
-    alignItems: 'center',
-    gap: 8,
-  },
-  badge: {
-    background: '#ef4444',
-    color: '#fff',
-    borderRadius: 10,
-    padding: '2px 8px',
-    fontSize: 11,
-    fontWeight: 700,
-  },
-  empty: { padding: 24, textAlign: 'center', color: '#475569', fontSize: 13 },
-  item: {
-    padding: '12px 16px',
-    borderBottom: '1px solid #1e2235',
-    display: 'flex',
-    alignItems: 'flex-start',
-    gap: 10,
-  },
-  icon: { fontSize: 16, flexShrink: 0, marginTop: 1 },
-  content: { flex: 1 },
-  kioskName: { fontSize: 13, fontWeight: 600, color: '#e2e8f0' },
-  itemName: { fontSize: 12, color: '#94a3b8', marginTop: 2 },
-  stock: { fontSize: 11, marginTop: 4 },
-  time: { fontSize: 11, color: '#475569', flexShrink: 0 },
-};
+function timeAgo(iso: string): string {
+  const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
+  if (diff < 60) return `${diff}s ago`;
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+  return `${Math.floor(diff / 3600)}h ago`;
+}
 
 export function InventoryAlertFeed({ alerts }: InventoryAlertFeedProps) {
   const criticalAlerts = alerts.filter((a) => a.severity === 'critical');
 
   return (
-    <section style={styles.container} aria-label="Inventory depletion alerts" aria-live="polite">
-      <div style={styles.header}>
-        <span style={{ flex: 1 }}>Inventory Alerts</span>
-        {criticalAlerts.length > 0 && (
-          <span style={styles.badge} role="status">
-            {criticalAlerts.length} critical
-          </span>
-        )}
+    <section aria-label="Inventory depletion alerts" aria-live="polite" aria-atomic="false">
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <h2 style={{ fontSize: 32, fontWeight: 900, color: '#e2e2eb', letterSpacing: '-0.02em', margin: 0 }}>
+            Inventory Alerts
+          </h2>
+          {criticalAlerts.length > 0 && (
+            <span style={{
+              background: '#ff5451', color: '#fff',
+              borderRadius: 4, padding: '4px 8px',
+              fontSize: 14, fontWeight: 900,
+            }} role="status" aria-label={`${criticalAlerts.length} critical alerts`}>
+              {criticalAlerts.length}
+            </span>
+          )}
+        </div>
       </div>
+
       {alerts.length === 0 ? (
-        <div style={styles.empty}>No inventory alerts</div>
+        <div style={{
+          background: '#191b22', borderRadius: 10, padding: '24px 16px',
+          textAlign: 'center', color: '#424754', fontSize: 12,
+          fontWeight: 600, letterSpacing: '0.05em',
+        }}>
+          No inventory alerts
+        </div>
       ) : (
-        <ul style={{ listStyle: 'none' }}>
-          {alerts.map((alert) => (
-            <li key={alert.alertId} style={styles.item} role="listitem">
-              <span style={styles.icon} aria-hidden="true">
-                {alert.severity === 'critical' ? '🔴' : '🟡'}
-              </span>
-              <div style={styles.content}>
-                <div style={styles.kioskName}>{alert.kioskName}</div>
-                <div style={styles.itemName}>{alert.itemName}</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {alerts.map(alert => {
+            const isCritical = alert.severity === 'critical';
+            const borderColor = isCritical ? '#ff5451' : '#f59e0b';
+            const badgeBgColor = isCritical ? '#ff5451' : '#f59e0b';
+            const badgeTextColor = isCritical ? '#ffdad6' : '#fff';
+            const iconBgColor = isCritical ? 'rgba(255,84,81,0.15)' : 'rgba(245,158,11,0.15)';
+            
+            return (
+              <div
+                key={alert.alertId}
+                role="alert"
+                className="animate-slide-in"
+                style={{
+                  background: '#1a1d27',
+                  borderRadius: 8,
+                  borderLeft: `4px solid ${borderColor}`,
+                  padding: '20px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 20,
+                  transition: 'background 0.15s',
+                  boxShadow: isCritical ? '0 0 15px rgba(255,179,173,0.05)' : 'none',
+                }}
+              >
+                {/* Icon box */}
                 <div
                   style={{
-                    ...styles.stock,
-                    color: alert.severity === 'critical' ? '#ef4444' : '#f59e0b',
+                    width: 48,
+                    height: 48,
+                    borderRadius: 8,
+                    backgroundColor: iconBgColor,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                    fontSize: 24,
+                  }}
+                  aria-hidden="true"
+                >
+                  {isCritical ? '🔴' : '🟡'}
+                </div>
+
+                {/* Content */}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+                    <h3 style={{ fontSize: 16, fontWeight: 700, color: '#e2e2eb', margin: 0, lineHeight: 1.2 }}>
+                      {alert.kioskName}
+                    </h3>
+                    <span
+                      style={{
+                        fontSize: 10,
+                        fontWeight: 900,
+                        background: badgeBgColor,
+                        color: badgeTextColor,
+                        padding: '2px 8px',
+                        borderRadius: 4,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.1em',
+                        flexShrink: 0,
+                      }}
+                    >
+                      {isCritical ? 'CRITICAL' : 'LOW'}
+                    </span>
+                  </div>
+                  
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 16, fontSize: 12, color: '#c2c6d6' }}>
+                    <span>{alert.itemName}</span>
+                    <span style={{ color: '#424754' }}>•</span>
+                    <span>Stock: {alert.currentStock} (min: {alert.minThreshold})</span>
+                    <span style={{ color: '#424754' }}>•</span>
+                    <span style={{ color: '#424754' }}>{timeAgo(alert.detectedAt)}</span>
+                  </div>
+                </div>
+
+                {/* Resolve button */}
+                <button
+                  aria-label={`Resolve alert for ${alert.kioskName}`}
+                  style={{
+                    background: '#282a30',
+                    border: 'none',
+                    color: '#c2c6d6',
+                    padding: '8px 16px',
+                    borderRadius: 4,
+                    cursor: 'pointer',
+                    fontSize: 10,
+                    fontWeight: 900,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.15em',
+                    transition: 'all 0.15s',
+                    flexShrink: 0,
+                    whiteSpace: 'nowrap',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = borderColor;
+                    e.currentTarget.style.color = '#fff';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = '#282a30';
+                    e.currentTarget.style.color = '#c2c6d6';
                   }}
                 >
-                  Stock: {alert.currentStock} (min: {alert.minThreshold})
-                </div>
+                  Resolve
+                </button>
               </div>
-              <span style={styles.time}>
-                {new Date(alert.detectedAt).toLocaleTimeString()}
-              </span>
-            </li>
-          ))}
-        </ul>
+            );
+          })}
+        </div>
       )}
     </section>
   );

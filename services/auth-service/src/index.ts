@@ -10,6 +10,7 @@
 //   DELETE /auth/account
 //   GET    /auth/.well-known/jwks.json
 
+import 'dotenv/config';
 import express from 'express';
 import { initKeys } from './keys';
 import authRouter from './routes/auth';

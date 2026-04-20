@@ -3,7 +3,6 @@
  * Tests 15.6: staff location map overlay.
  * Requirements 28.1
  */
-import React from 'react';
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { StaffPinsOverlay, StaffLocation } from './StaffPinsOverlay';

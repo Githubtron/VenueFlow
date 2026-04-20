@@ -1,0 +1,32 @@
+{
+  "projectId": "venueflow",
+  "buildCommand": "npm run build:dashboard",
+  "outputDirectory": "apps/dashboard/dist",
+  "installCommand": "npm install",
+  "public": false,
+  "framework": "vite",
+  "rewrites": [
+    {
+      "source": "/:path((?!api|_next/static|_next/image|favicon.ico).*)",
+      "destination": "/index.html"
+    }
+  ],
+  "redirects": [],
+  "headers": [
+    {
+      "source": "/api(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        }
+      ]
+    }
+  ],
+  "env": [
+    {
+      "key": "VITE_API_URL",
+      "value": "@api_url"
+    }
+  ]
+}

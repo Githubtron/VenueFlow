@@ -3,7 +3,6 @@
  * Tests 15.1: zone headcount display and color-coded status.
  * Requirements 6.1
  */
-import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ZoneHeatmap, ZoneSnapshot } from './ZoneHeatmap';

@@ -3,7 +3,6 @@
  * Tests 15.2: anomaly alert rendering and deployment recommendations.
  * Requirements 6.3, 6.4
  */
-import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { AnomalyAlertPanel, AnomalyAlert } from './AnomalyAlertPanel';

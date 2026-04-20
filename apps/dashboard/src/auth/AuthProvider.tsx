@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { AuthContext, AuthUser } from './useAuth';
+import { buildApiUrl } from '../utils/api';
 
 const TOKEN_KEY = 'vf_dashboard_token';
 const USER_KEY = 'vf_dashboard_user';
@@ -15,27 +16,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   });
 
   const login = useCallback(async (email: string, password: string) => {
-    const res = await fetch('/api/auth/login', {
+    // Step 1: login to get tokens
+    const res = await fetch(buildApiUrl('/auth/login'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
     });
 
     if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error((err as { message?: string }).message ?? 'Login failed');
+      const err = await res.json().catch(() => ({})) as { error?: string; message?: string };
+      throw new Error(err.error ?? err.message ?? 'Login failed');
     }
 
-    const data = (await res.json()) as {
-      accessToken: string;
-      user: { userId: string; email: string; role: string; venueId: string };
+    const data = await res.json() as { accessToken: string; refreshToken: string };
+
+    // Step 2: fetch user profile using the access token
+    const meRes = await fetch(buildApiUrl('/auth/me'), {
+      headers: { Authorization: `Bearer ${data.accessToken}` },
+    });
+
+    if (!meRes.ok) throw new Error('Failed to fetch user profile');
+
+    const me = await meRes.json() as {
+      userId: string;
+      email: string;
+      role: string;
+      venueId?: string;
     };
 
     const authUser: AuthUser = {
-      userId: data.user.userId,
-      email: data.user.email,
-      role: data.user.role as AuthUser['role'],
-      venueId: data.user.venueId ?? '',
+      userId: me.userId,
+      email: me.email,
+      role: me.role as AuthUser['role'],
+      venueId: me.venueId ?? 'venue-1',
       token: data.accessToken,
     };
 

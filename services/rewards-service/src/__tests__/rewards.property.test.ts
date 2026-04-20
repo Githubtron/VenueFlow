@@ -48,7 +48,7 @@ describe('Property 27: Gamification Idempotency', () => {
           attendeeId: fc.uuid(),
           actionType: fc.constantFrom(...Object.keys(POINTS_MAP)),
           venueEventId: fc.uuid(),
-          referenceId: fc.option(fc.uuid()),
+          referenceId: fc.option(fc.uuid(), { nil: undefined }),
         }),
         fc.integer({ min: 2, max: 10 }),
         (event, submitCount) => {

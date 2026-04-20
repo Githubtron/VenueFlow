@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>VenueFlow | Operations Command</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-surface-variant": "#c2c6d6",
+                    "surface-dim": "#111319",
+                    "on-tertiary": "#502400",
+                    "on-tertiary-fixed-variant": "#723600",
+                    "secondary": "#b9c8de",
+                    "tertiary": "#ffb786",
+                    "inverse-surface": "#e2e2eb",
+                    "inverse-primary": "#0060ac",
+                    "on-tertiary-container": "#461f00",
+                    "on-primary-fixed": "#001c39",
+                    "primary": "#a4c9ff",
+                    "on-primary": "#00315d",
+                    "surface-variant": "#33343b",
+                    "on-secondary-fixed-variant": "#39485a",
+                    "secondary-fixed": "#d4e4fa",
+                    "primary-fixed-dim": "#a4c9ff",
+                    "on-background": "#e2e2eb",
+                    "background": "#111319",
+                    "secondary-fixed-dim": "#b9c8de",
+                    "on-secondary-container": "#a7b6cc",
+                    "surface-container-low": "#191b22",
+                    "on-primary-fixed-variant": "#004883",
+                    "error-container": "#93000a",
+                    "surface-container": "#1e1f26",
+                    "surface-bright": "#373940",
+                    "primary-fixed": "#d4e3ff",
+                    "on-secondary": "#233143",
+                    "on-secondary-fixed": "#0d1c2d",
+                    "surface": "#111319",
+                    "outline": "#8c909f",
+                    "error": "#ffb4ab",
+                    "on-tertiary-fixed": "#311400",
+                    "surface-tint": "#a4c9ff",
+                    "on-primary-container": "#002a51",
+                    "secondary-container": "#39485a",
+                    "outline-variant": "#424754",
+                    "inverse-on-surface": "#2e3037",
+                    "tertiary-fixed": "#ffdcc6",
+                    "primary-container": "#4c93e7",
+                    "on-surface": "#e2e2eb",
+                    "tertiary-container": "#df7412",
+                    "on-error": "#690005",
+                    "surface-container-lowest": "#0c0e14",
+                    "tertiary-fixed-dim": "#ffb786",
+                    "on-error-container": "#ffdad6",
+                    "surface-container-highest": "#33343b",
+                    "surface-container-high": "#282a30"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Inter"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glow-pulse {
+            box-shadow: 0 0 15px 2px rgba(255, 180, 171, 0.3);
+            animation: pulse 2s infinite ease-in-out;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.02); }
+        }
+        .backdrop-blur-custom {
+            backdrop-filter: blur(12px);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body selection:bg-primary selection:text-on-primary">
+<!-- SideNavBar Shell -->
+<aside class="h-screen w-64 fixed left-0 top-0 z-40 bg-[#191b22] shadow-2xl flex flex-col p-4 gap-2 hidden md:flex">
+<div class="flex items-center gap-3 px-2 py-6">
+<div class="w-8 h-8 rounded bg-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary" data-icon="dashboard">dashboard</span>
+</div>
+<div>
+<h1 class="text-blue-500 font-black font-headline text-lg tracking-tighter uppercase">VenueFlow</h1>
+<p class="font-['Inter'] uppercase tracking-[0.05em] text-[10px] font-bold text-on-surface-variant">Ops Command</p>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 bg-gradient-to-r from-[#a4c9ff] to-[#4c93e7] text-white rounded-lg shadow-[0_0_15px_rgba(164,201,255,0.3)] transition-all duration-200 active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-['Inter'] uppercase tracking-[0.05em] text-[10px] font-bold">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-[#c2c6d6] hover:bg-[#282a30] rounded-lg transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined" data-icon="layers">layers</span>
+<span class="font-['Inter'] uppercase tracking-[0.05em] text-[10px] font-bold">Heatmap</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-[#c2c6d6] hover:bg-[#282a30] rounded-lg transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined" data-icon="sensor_door">sensor_door</span>
+<span class="font-['Inter'] uppercase tracking-[0.05em] text-[10px] font-bold">Gates</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-[#c2c6d6] hover:bg-[#282a30] rounded-lg transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined" data-icon="warning">warning</span>
+<span class="font-['Inter'] uppercase tracking-[0.05em] text-[10px] font-bold">Alerts</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-[#c2c6d6] hover:bg-[#282a30] rounded-lg transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined" data-icon="badge">badge</span>
+<span class="font-['Inter'] uppercase tracking-[0.05em] text-[10px] font-bold">Staff</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-[#c2c6d6] hover:bg-[#282a30] rounded-lg transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span class="font-['Inter'] uppercase tracking-[0.05em] text-[10px] font-bold">Analytics</span>
+</a>
+</nav>
+<div class="mt-auto space-y-1">
+<button class="w-full mb-4 bg-surface-bright hover:bg-[#282a30] text-primary py-2 rounded-lg font-['Inter'] uppercase tracking-[0.05em] text-[10px] font-bold transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]">New Report</button>
+<a class="flex items-center gap-3 px-3 py-2 text-[#c2c6d6] hover:bg-[#282a30] rounded-lg transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+<span class="font-['Inter'] uppercase tracking-[0.05em] text-[10px] font-bold">Support</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-[#c2c6d6] hover:bg-[#282a30] rounded-lg transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+<span class="font-['Inter'] uppercase tracking-[0.05em] text-[10px] font-bold">Logs</span>
+</a>
+</div>
+</aside>
+<!-- TopNavBar Shell -->
+<header class="fixed top-0 right-0 left-0 md:left-64 h-16 z-50 bg-[#111319] dark:bg-[#111319]/80 backdrop-blur-xl shadow-[0_20px_40px_rgba(0,0,0,0.4)] flex justify-between items-center px-8 border-none bg-[#191b22]">
+<div class="flex items-center gap-6">
+<span class="text-white font-bold border-b-2 border-[#a4c9ff] pb-1 font-headline tracking-tight antialiased">Main Stage Concert</span>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center bg-[#282a30] rounded-full px-4 py-1 gap-2">
+<span class="w-2 h-2 rounded-full bg-error glow-pulse"></span>
+<span class="text-on-surface-variant font-label text-[10px] font-bold uppercase tracking-[0.05em]">24.5k Live</span>
+</div>
+<button class="bg-error text-on-error font-bold px-4 py-1 rounded-lg hover:scale-[1.02] active:scale-[0.98] transition-all duration-200">SOS</button>
+<div class="flex items-center gap-2">
+<button class="p-2 text-[#94a3b8] hover:text-white hover:bg-[#282a30] rounded-full transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 text-[#94a3b8] hover:text-white hover:bg-[#282a30] rounded-full transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+<img alt="Manager Profile" class="w-8 h-8 rounded-full border border-outline-variant" data-alt="Close up portrait of a confident middle-aged event operations manager in a dark professional studio setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCMjn2IZ6vCclG_cKhXoMQVJDy2Ywu81TvRsy5vrtf3WHMDchcXt3HcwLKnUdGxBiDxFpbXO2pg9Oh4DQP4Glv8OtprcItpHrKDNn0YJwf8qX4Nvi8_oI7nbW2nOh-hrbN8fZPBK9ZT7AxtG0rKG0RGgmRGzvFFeXQBgszI_Tz0XjSlkaaJ3aD-1t5eHnxXhoOr2NnDPnzLIertayvZQNqfurIGSN9gHJmOGvopkX5Tt0w5sy6Rp-P9Pj8AGgT_-8iISNe4HCloDTU"/>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="pt-24 pb-12 px-8 md:ml-64 min-h-screen bg-[#111319]">
+<!-- Dashboard Header -->
+<div class="flex justify-between items-end mb-8">
+<div>
+<h2 class="text-3xl font-extrabold tracking-tight text-white font-headline">Live Operations</h2>
+<p class="text-on-surface-variant font-body">Real-time venue intelligence and gate analytics.</p>
+</div>
+<div class="flex gap-3">
+<button class="bg-surface-container-high px-4 py-2 rounded-lg text-on-surface hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 flex items-center gap-2">
+<span class="material-symbols-outlined text-sm" data-icon="filter_list">filter_list</span>
+<span class="font-label text-xs uppercase tracking-wider font-bold">Filter View</span>
+</button>
+<button class="bg-gradient-to-r from-[#a4c9ff] to-[#4c93e7] px-4 py-2 rounded-lg text-on-primary font-bold hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 flex items-center gap-2 shadow-lg">
+<span class="material-symbols-outlined text-sm" data-icon="download">download</span>
+<span class="font-label text-xs uppercase tracking-wider font-bold">Export Logs</span>
+</button>
+</div>
+</div>
+<!-- 3-Column Grid Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<!-- Occupancy Panel -->
+<section class="bg-[#1a1d27] rounded-xl p-6 shadow-xl space-y-6 flex flex-col relative overflow-hidden">
+<div class="flex justify-between items-start">
+<div>
+<p class="font-label text-[10px] font-bold text-[#94a3b8] uppercase tracking-[0.05em]">Occupancy Level</p>
+<h3 class="text-4xl font-black text-white mt-1">82<span class="text-primary text-xl">%</span></h3>
+</div>
+<div class="p-3 bg-surface-container-low rounded-lg">
+<span class="material-symbols-outlined text-primary" data-icon="group">group</span>
+</div>
+</div>
+<div class="flex-1 flex flex-col justify-center gap-4">
+<div class="relative h-2 w-full bg-surface-container-low rounded-full overflow-hidden">
+<div class="absolute top-0 left-0 h-full w-[82%] bg-gradient-to-r from-primary to-primary-container rounded-full"></div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-surface-container-low p-4 rounded-lg">
+<p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">In Venue</p>
+<p class="text-xl font-bold text-white">20,492</p>
+</div>
+<div class="bg-surface-container-low p-4 rounded-lg">
+<p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Remaining</p>
+<p class="text-xl font-bold text-white">4,008</p>
+</div>
+</div>
+</div>
+<div class="pt-4 border-t border-outline-variant/10">
+<p class="text-xs text-on-surface-variant italic">Peak expected at 21:00 (approx. 94%)</p>
+</div>
+</section>
+<!-- Gate Summary Panel -->
+<section class="bg-[#1a1d27] rounded-xl p-6 shadow-xl space-y-6 flex flex-col border-none">
+<div class="flex justify-between items-start">
+<div>
+<p class="font-label text-[10px] font-bold text-[#94a3b8] uppercase tracking-[0.05em]">Gate Throughput</p>
+<h3 class="text-4xl font-black text-white mt-1">125<span class="text-primary text-xl">ppm</span></h3>
+</div>
+<div class="p-3 bg-surface-container-low rounded-lg">
+<span class="material-symbols-outlined text-primary" data-icon="door_open">door_open</span>
+</div>
+</div>
+<div class="space-y-4">
+<div class="flex items-center justify-between p-3 bg-surface-container-low rounded-lg hover:scale-[1.02] transition-all duration-200 cursor-pointer">
+<div class="flex items-center gap-3">
+<div class="w-2 h-2 rounded-full bg-primary"></div>
+<span class="text-sm font-bold text-white">North Gate (VIP)</span>
+</div>
+<span class="text-sm font-headline font-bold">42 ppm</span>
+</div>
+<div class="flex items-center justify-between p-3 bg-surface-container-low rounded-lg hover:scale-[1.02] transition-all duration-200 cursor-pointer">
+<div class="flex items-center gap-3">
+<div class="w-2 h-2 rounded-full bg-primary"></div>
+<span class="text-sm font-bold text-white">East Entrance</span>
+</div>
+<span class="text-sm font-headline font-bold">68 ppm</span>
+</div>
+<div class="flex items-center justify-between p-3 bg-error/10 border border-error/20 rounded-lg hover:scale-[1.02] transition-all duration-200 cursor-pointer">
+<div class="flex items-center gap-3">
+<div class="w-2 h-2 rounded-full bg-error glow-pulse"></div>
+<span class="text-sm font-bold text-error">South Gate</span>
+</div>
+<span class="text-sm font-headline font-bold text-error">15 ppm</span>
+</div>
+</div>
+<button class="mt-auto w-full py-3 bg-surface-container-high rounded-lg text-[10px] font-bold uppercase tracking-widest text-on-surface-variant hover:text-white hover:bg-surface-bright transition-all duration-200">View Detailed Gate Map</button>
+</section>
+<!-- Active Alerts Panel -->
+<section class="bg-[#1a1d27] rounded-xl p-6 shadow-xl space-y-4 flex flex-col">
+<div class="flex justify-between items-start mb-2">
+<div>
+<p class="font-label text-[10px] font-bold text-error uppercase tracking-[0.05em]">Critical Alerts</p>
+<h3 class="text-xl font-bold text-white mt-1">3 Active Issues</h3>
+</div>
+<span class="material-symbols-outlined text-error" data-icon="warning" style="font-variation-settings: 'FILL' 1;">warning</span>
+</div>
+<div class="space-y-3">
+<div class="bg-surface-container-lowest p-4 rounded-lg border-l-4 border-error hover:scale-[1.02] transition-all duration-200 cursor-pointer group">
+<div class="flex justify-between">
+<h4 class="text-sm font-bold text-white">South Gate Congestion</h4>
+<span class="text-[10px] text-on-surface-variant">2m ago</span>
+</div>
+<p class="text-xs text-on-surface-variant mt-1">Wait times exceeding 15 minutes. Re-routing recommended.</p>
+<div class="mt-3 flex gap-2">
+<button class="px-3 py-1 bg-error text-on-error text-[10px] font-bold rounded uppercase active:scale-[0.95]">Deploy Staff</button>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-4 rounded-lg border-l-4 border-tertiary hover:scale-[1.02] transition-all duration-200 cursor-pointer">
+<div class="flex justify-between">
+<h4 class="text-sm font-bold text-white">Scanner Offline: B-12</h4>
+<span class="text-[10px] text-on-surface-variant">12m ago</span>
+</div>
+<p class="text-xs text-on-surface-variant mt-1">Hardware failure detected at Gate B, Turnstile 12.</p>
+</div>
+<div class="bg-surface-container-lowest p-4 rounded-lg border-l-4 border-primary hover:scale-[1.02] transition-all duration-200 cursor-pointer">
+<div class="flex justify-between">
+<h4 class="text-sm font-bold text-white">Capacity Alert: Zone 4</h4>
+<span class="text-[10px] text-on-surface-variant">45m ago</span>
+</div>
+<p class="text-xs text-on-surface-variant mt-1">Zone 4 (North Terrace) reaching 90% capacity.</p>
+</div>
+</div>
+</section>
+</div>
+<!-- Secondary Row: Asymmetric Heatmap and Staff -->
+<div class="mt-8 grid grid-cols-1 lg:grid-cols-12 gap-6">
+<section class="lg:col-span-8 bg-[#1a1d27] rounded-xl overflow-hidden shadow-xl min-h-[400px] flex flex-col">
+<div class="p-6 flex justify-between items-center bg-[#1a1d27]/50 backdrop-blur-md z-10">
+<h3 class="font-headline font-bold text-white">Venue Heatmap</h3>
+<div class="flex gap-2">
+<div class="flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-error"></span>
+<span class="text-[10px] text-on-surface-variant uppercase font-bold tracking-tighter">High</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+<span class="text-[10px] text-on-surface-variant uppercase font-bold tracking-tighter">Med</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<span class="text-[10px] text-on-surface-variant uppercase font-bold tracking-tighter">Low</span>
+</div>
+</div>
+</div>
+<div class="flex-1 relative bg-[#0c0e14]">
+<img class="w-full h-full object-cover opacity-60" data-alt="Top-down architectural layout of a large modern concert venue stadium with digital heatmap overlays showing crowd density in glowing red and blue areas" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD-QwYZtXMC4AlNHB43UbqJdDbtSgf9tylM2Jk5OMIabiKKwjLTWfKwDTXCPIQKkA_6WNnDKiOFYutC-MJTSROCzqbMIbJqIfUaJfxJbHu1hG-ZhY_pCNli_pmqU1GL2gCtWSC6HtapCCbbW0hlK7uxwZzsxCNmY5GHA12uKDZCdjcxS6XQz75tQktGwhAtbHUsWqig6sdJLIrCXbbMB489xxhDB-JCMfiNgUQlEtvztM-mfjPfiUZ8g0BLuCa5uW0f8E6hAnsP1sA"/>
+<!-- Heatmap Overlays Simulated -->
+<div class="absolute inset-0 flex items-center justify-center">
+<div class="w-32 h-32 bg-error/20 rounded-full blur-3xl glow-pulse"></div>
+<div class="absolute top-20 right-40 w-48 h-48 bg-primary/10 rounded-full blur-3xl"></div>
+</div>
+</div>
+</section>
+<section class="lg:col-span-4 bg-[#1a1d27] rounded-xl p-6 shadow-xl flex flex-col">
+<h3 class="font-headline font-bold text-white mb-6">Staff Deployment</h3>
+<div class="space-y-6">
+<div class="flex items-center gap-4">
+<div class="relative">
+<img alt="Staff 1" class="w-10 h-10 rounded-full object-cover" data-alt="Close up professional headshot of a male security supervisor in uniform looking into camera" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD_ZdlpwoF_Lpt90uAmyXkS74immmRFcbYR2Q92eGexthgL33WL39QlXKjZFj9Qa9OO825tY0lLt21nMmUlRU6bT99oAQQyJXQSam9X268WW_8bOD8t6sm6hrvyW-jNPbejBTA7q1mX1PMV_i_R52wR5OZUDXF6kuVTMpB2Vr9zYKPYUuz5zqJsRv26yLPBOGKl7msz6Iq8bfPUCaPae3DLGsdRNVqYRRnmhUxiaNCype3KSJEdCEFiASDOwJ8IcgsrOztZoWBmQ38"/>
+<div class="absolute bottom-0 right-0 w-3 h-3 bg-primary border-2 border-[#1a1d27] rounded-full"></div>
+</div>
+<div class="flex-1">
+<h4 class="text-sm font-bold text-white">David Miller</h4>
+<p class="text-xs text-on-surface-variant">Security Lead • Zone A</p>
+</div>
+<button class="p-2 bg-surface-container-low rounded-lg hover:scale-[1.02] active:scale-[0.98] transition-all">
+<span class="material-symbols-outlined text-sm" data-icon="chat">chat</span>
+</button>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative">
+<img alt="Staff 2" class="w-10 h-10 rounded-full object-cover" data-alt="Professional portrait of a female event coordinator with headset smiling softly" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCxYKF-9u2GmCuE9o4vysSzYgk_Jd_LxDxq3q8D55Eg1YQl4dJljGgjaMXKrkcpPI-hIjK0Bwq5kvBzYrxz3ICNdr4FywYxh_xab5tA_cvpwc5evBw7sQJcuM5AN8a3A-4wzHFO4jQlEOn7VCqnxoWHXKdpFeEBYS8Hd4Z5CSAmr_Xv261jq0WMNmbi8xbdCn_TNxL_B1J7rMgz1NwwA-TCyfwpYKElJ_9tFnDknARbZh8yzxNEKwbDcRnXWbKxBFV56UKYqhI2b-E"/>
+<div class="absolute bottom-0 right-0 w-3 h-3 bg-primary border-2 border-[#1a1d27] rounded-full"></div>
+</div>
+<div class="flex-1">
+<h4 class="text-sm font-bold text-white">Sarah Chen</h4>
+<p class="text-xs text-on-surface-variant">Medical Response • Floor</p>
+</div>
+<button class="p-2 bg-surface-container-low rounded-lg hover:scale-[1.02] active:scale-[0.98] transition-all">
+<span class="material-symbols-outlined text-sm" data-icon="chat">chat</span>
+</button>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative">
+<img alt="Staff 3" class="w-10 h-10 rounded-full object-cover" data-alt="Close up of a young male technician in a dark polo shirt with a digital tablet" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB0WBSUDl0NCH8EcHgi6UOXHBtnLC7-09q2TpkffMnXiyCMHDs5bupdIOcx2boa_z1AYxgwmuRzlItGct4ySpw753F5YiBsvn47neE6DexC4exe85RlX_6lEZP2FirT_aXf17qpY3EwZXqPbVFdl8_CEnouAs4O2APEivFaJx7GeVL41oTaVozUScyih28iAq7zejPlvehu_Soc1zQQGkXj9x60uIHpR0564ETfHcPblMmsKM1qySkl2sFqkFpp8iq6y5VROLAqzto"/>
+<div class="absolute bottom-0 right-0 w-3 h-3 bg-tertiary border-2 border-[#1a1d27] rounded-full"></div>
+</div>
+<div class="flex-1">
+<h4 class="text-sm font-bold text-white">Marcus Thorne</h4>
+<p class="text-xs text-on-surface-variant">IT Support • Gate B</p>
+</div>
+<button class="p-2 bg-surface-container-low rounded-lg hover:scale-[1.02] active:scale-[0.98] transition-all">
+<span class="material-symbols-outlined text-sm" data-icon="chat">chat</span>
+</button>
+</div>
+</div>
+<button class="mt-auto w-full py-4 border border-outline-variant/20 rounded-lg text-[10px] font-bold uppercase tracking-widest text-on-surface-variant hover:text-white hover:bg-surface-container-high transition-all duration-200">Dispatch Message to All Staff</button>
+</section>
+</div>
+</main>
+<!-- BottomNavBar for Mobile -->
+<nav class="fixed bottom-0 left-0 right-0 h-16 bg-[#191b22] border-none shadow-[0_-10px_30px_rgba(0,0,0,0.4)] flex md:hidden items-center justify-around z-50">
+<a class="flex flex-col items-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="text-[10px] font-bold uppercase">Ops</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-[#c2c6d6]" href="#">
+<span class="material-symbols-outlined" data-icon="layers">layers</span>
+<span class="text-[10px] font-bold uppercase">Map</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-[#c2c6d6]" href="#">
+<span class="material-symbols-outlined" data-icon="warning">warning</span>
+<span class="text-[10px] font-bold uppercase">Alerts</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-[#c2c6d6]" href="#">
+<span class="material-symbols-outlined" data-icon="badge">badge</span>
+<span class="text-[10px] font-bold uppercase">Staff</span>
+</a>
+</nav>
+</body></html>

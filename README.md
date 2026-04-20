@@ -138,6 +138,21 @@ cd services/queue-predictor && pytest
 
 ---
 
+## Deployment
+
+### Vercel Deployment (Dashboard)
+
+The Operations Dashboard is configured for easy deployment to Vercel. See `VERCEL_DEPLOYMENT.md` for complete instructions.
+
+**Quick Start:**
+1. Connect your GitHub repository to Vercel
+2. Set environment variables (`VITE_API_URL`, `VITE_WS_URL`)
+3. Deploy
+
+See `DEPLOYMENT_FIX_SUMMARY.md` for recent deployment configuration updates.
+
+---
+
 ## Known Gaps
 
 See `KNOWN_GAPS.md` for a full list of intentional trade-offs and migration paths.

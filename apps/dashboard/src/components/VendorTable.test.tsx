@@ -3,7 +3,6 @@
  * Tests 15.8: vendor kiosk data binding.
  * Requirements 30.1, 30.4
  */
-import React from 'react';
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { VendorTable, VendorKioskStats } from './VendorTable';
