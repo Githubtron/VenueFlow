@@ -1,5 +1,4 @@
 {
-  "projectId": "venueflow",
   "buildCommand": "npm run build:dashboard",
   "outputDirectory": "apps/dashboard/dist",
   "installCommand": "npm install",
