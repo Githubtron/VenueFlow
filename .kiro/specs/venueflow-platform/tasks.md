@@ -1,0 +1,771 @@
+# Implementation Plan: VenueFlow Platform
+
+## Overview
+
+Incremental implementation across four phases matching the PRD roadmap. Each phase builds on the previous, starting with the foundational infrastructure and MVP crowd management features, then layering in ML prediction, safety coordination, and advanced analytics. All Node.js services use **fast-check** for property tests; all Python/FastAPI services use **Hypothesis**.
+
+---
+
+## Phase 1 — MVP: Entry Routing, Heatmap, Basic Wayfinding
+
+- [x] 1. Set up monorepo structure, shared types, and infrastructure configuration
+  - Initialize monorepo (e.g., Turborepo or Nx) with `services/`, `apps/`, `infra/`, and `packages/shared-types` directories
+  - Define all shared TypeScript interfaces: `Zone`, `SensorReading`, `ZoneDensitySnapshot`, `QueuePrediction`, `NavigationRoute`, `RouteStep`, `VenueGraphEdge`, `AttendeeTicket`, `User`, `EmergencyEvent`, `EventSession`, `StaffMember`, `ShiftSchedule`, `MedicalSOS`, `ParkingZone`, `VendorKiosk`, `SponsorZone`
+  - Write Terraform/CDK modules for: VPC, ECS/EKS cluster, RDS PostgreSQL (primary + replica), ElastiCache Redis cluster, MSK Kafka (KRaft, replication factor 3), S3 buckets (maps, ML models), TimescaleDB instance
+  - Configure Kafka topic registry: create all topics listed in the design with correct retention (>=7 days) and partition counts
+  - Set up AWS API Gateway + ALB routing rules pointing to service placeholders
+  - _Requirements: 7.1, 7.2, 7.4, 8.1, 8.2, 8.3_
+
+- [x] 2. Implement Auth Service (Node.js)
+  - [x] 2.1 Implement JWT authentication endpoints
+    - `POST /auth/login` — issue RS256 access token (15 min) + refresh token (7 days)
+    - `POST /auth/refresh` — rotate tokens
+    - `DELETE /auth/account` — soft-delete + anonymize user record (GDPR)
+    - Store hashed email; enforce TLS 1.2+ on all endpoints
+    - _Requirements: 6.5, 9.3, 9.5_
+  - [x] 2.2 Implement RBAC middleware
+    - Define permission matrix for `ATTENDEE`, `STAFF`, `ADMIN`, `EMERGENCY` roles
+    - Middleware rejects requests where `(role, function)` pair is not in the authorized set
+    - _Requirements: 6.5_
+  - [ ]* 2.3 Write property test for RBAC (P16)
+    - **Property 16: Role-Based Access Control**
+    - **Validates: Requirements 6.5**
+    - Use fast-check to generate arbitrary `(role, function)` pairs and assert the access check returns authorized iff the pair is in the permission matrix; no role may access a function outside its set
+  - [ ]* 2.4 Write unit tests for Auth Service
+    - Test token issuance, expiry, refresh rotation, and account deletion anonymization
+    - _Requirements: 6.5, 9.3_
+
+- [x] 3. Implement IoT Gateway (MQTT to Kafka bridge)
+  - [x] 3.1 Implement MQTT subscriber and Kafka producer
+    - Subscribe to MQTT broker topics per sensor type (`pressure`, `ir`, `ble`)
+    - Translate each MQTT message to a `SensorReading` Kafka event on `sensor.readings`
+    - Validate schema before producing; drop and log malformed messages
+    - _Requirements: 7.1, 7.2_
+  - [x] 3.2 Implement sensor heartbeat monitor (Kafka Streams processor)
+    - Track last-seen timestamp per `sensorId`; emit `sensor.failures` event to Kafka if no reading within 30 s
+    - _Requirements: 7.3_
+  - [ ]* 3.3 Write integration smoke test
+    - Verify Kafka topic retention >=7 days and that a produced `SensorReading` is consumable within 1 s
+    - _Requirements: 7.1, 7.4_
+
+- [x] 4. Implement Heatmap Engine (FastAPI + Python)
+  - [x] 4.1 Implement Kafka consumer with 10-second tumbling window aggregation
+    - Consume `sensor.readings`; aggregate `count` per `zoneId` over 10 s tumbling windows
+    - Write `ZoneDensitySnapshot` records to TimescaleDB after each window
+    - _Requirements: 2.1, 7.1_
+  - [x] 4.2 Implement zone density classifier
+    - Map `densityPercent` to `green | yellow | red` using configurable thresholds per zone
+    - Mark zone `unavailable` if `lastUpdated` is >30 s in the past
+    - _Requirements: 2.3, 2.7_
+  - [ ]* 4.3 Write property test for density classification monotonicity (P5)
+    - **Property 5: Zone Density Classification Monotonicity**
+    - **Validates: Requirements 2.3**
+    - Use Hypothesis to generate pairs (D1, D2) with D1 < D2 and assert classifier(D1) severity <= classifier(D2) severity
+  - [ ]* 4.4 Write property test for stale sensor data marking (P6)
+    - **Property 6: Stale Sensor Data Marking**
+    - **Validates: Requirements 2.7**
+    - Use Hypothesis to generate zone states with `lastUpdated` > 30 s ago and assert status is `unavailable`
+  - [x] 4.5 Implement Redis pub/sub publisher and REST endpoints
+    - After each window, publish heatmap delta to Redis channel `heatmap:{venueId}`
+    - Implement `GET /heatmap/{venueId}`, `GET /heatmap/{venueId}/zones/{zoneId}`
+    - Implement `GET /heatmap/{venueId}/replay?from={ts}&to={ts}` querying TimescaleDB
+    - _Requirements: 2.1, 2.2, 2.5, 2.6_
+  - [ ]* 4.6 Write property test for heatmap anonymization (P17)
+    - **Property 17: Heatmap Anonymization**
+    - **Validates: Requirements 7.5, 9.2**
+    - Use Hypothesis to assert every `ZoneDensitySnapshot` output contains only zone-level aggregate fields and no attendee-identifiable fields
+  - [ ]* 4.7 Write unit tests for Heatmap Engine
+    - Test window aggregation with known sensor inputs, boundary density values, and sensor-silence marking
+    - _Requirements: 2.1, 2.3, 2.7_
+
+- [x] 5. Implement Entry Router (Node.js)
+  - [x] 5.1 Implement gate recommendation algorithm
+    - Fetch zone densities from Redis; score gates using `score = (queue_length / capacity) + (distance_weight * attendee_distance)`
+    - Return gate with lowest score + `predictedWaitMinutes`; recalculate every 10 s
+    - `GET /entry/recommendation/{attendeeId}`
+    - _Requirements: 1.1, 1.2_
+  - [ ]* 5.2 Write property test for gate recommendation completeness (P1)
+    - **Property 1: Gate Recommendation Completeness**
+    - **Validates: Requirements 1.1**
+    - Use fast-check to generate valid venue states with >=1 active gate and assert response always contains a valid `gateId` and non-negative `predictedWaitMinutes`
+  - [x] 5.3 Implement Red_Zone gate reassignment push
+    - Subscribe to Redis `heatmap:{venueId}` updates; if an Attendee's assigned gate transitions to Red_Zone, push revised recommendation via WebSocket
+    - _Requirements: 1.5_
+  - [ ]* 5.4 Write property test for Red_Zone gate reassignment (P3)
+    - **Property 3: Red_Zone Gate Reassignment**
+    - **Validates: Requirements 1.5**
+    - Use fast-check to generate Attendee/gate assignments and assert that when gate G becomes Red_Zone, the updated recommendation returns a gate != G
+  - [x] 5.5 Implement QR ticket validation endpoint
+    - `POST /entry/scan` — verify RS256 JWT signature using cached venue public key; record entry event in PostgreSQL; return within 3 s
+    - Idempotent: second scan of same `ticketId` returns `ALREADY_ENTERED`
+    - _Requirements: 1.3, 1.4_
+  - [ ]* 5.6 Write property test for offline QR validation correctness (P2)
+    - **Property 2: Offline QR Validation Correctness**
+    - **Validates: Requirements 1.3**
+    - Use fast-check to generate valid and tampered/expired JWTs; assert validator accepts only correctly signed, non-expired tokens
+  - [x] 5.7 Implement face-scan entry endpoint
+    - `POST /entry/face-scan` — compute one-way perceptual hash of face embedding; pass hash to Threat Detection Service; record entry event; discard raw embedding immediately
+    - _Requirements: 1.7, 1.8, 9.1_
+  - [ ]* 5.8 Write property test for no biometric data post-entry (P4)
+    - **Property 4: No Biometric Data Post-Entry**
+    - **Validates: Requirements 1.8, 9.1**
+    - Use fast-check to generate entry events (QR and face-scan) and assert that after recording, querying the DB for biometric data returns no results
+  - [ ]* 5.9 Write property test for facial recognition no-biometric storage (P31)
+    - **Property 31: Facial Recognition No-Biometric Storage**
+    - **Validates: Requirements 1.7, 1.8, 9.1, 18.1**
+    - Use fast-check to assert that after any face-scan entry, no raw embedding is retrievable from any store; only the perceptual hash may exist and only for the active event session
+  - [ ]* 5.10 Write unit tests for Entry Router
+    - Test gate scoring with known density inputs, offline JWT validation edge cases, duplicate scan idempotency
+    - _Requirements: 1.1, 1.3, 1.4, 1.5_
+
+- [x] 6. Implement WebSocket Gateway and Notification Service (Node.js)
+  - [x] 6.1 Implement WebSocket Gateway with Redis pub/sub fan-out
+    - Clients subscribe to channels: `heatmap:{venueId}`, `alerts:{attendeeId}`, `emergency:{venueId}`
+    - Horizontal scaling via Redis pub/sub; connection state stored in Redis with TTL
+    - _Requirements: 2.2, 2.5_
+  - [x] 6.2 Implement Notification Service delivery pipeline
+    - Foregrounded: WebSocket message via Redis fan-out
+    - Background/terminated: FCM (Android) / APNs (iOS) silent push
+    - Emergency broadcasts: WebSocket + FCM/APNs + SMS simultaneously
+    - SMS fallback via Twilio/AWS SNS if FCM/APNs receipt not received within 30 s
+    - _Requirements: 2.4, 5.2, 5.3, 8.5, 20.1_
+  - [x] 6.3 Implement segmented push notification targeting
+    - Support audience segmentation by zone, ticket tier, and language preference
+    - `POST /notifications/broadcast` — accepts `segmentType: 'zone' | 'tier' | 'language'`, `segmentValue`, `message`, `scheduledAt?`
+    - Scheduled announcements: store in PostgreSQL with `scheduledAt` timestamp; cron job dispatches at scheduled time
+    - _Requirements: 32.1, 32.2, 32.3_
+  - [x] 6.4 Implement multilingual alert delivery
+    - Store message templates per locale in PostgreSQL; resolve Attendee locale from profile at dispatch time
+    - Fall back to English if locale template not found
+    - _Requirements: 32.2_
+  - [x] 6.5 Implement staff radio bridge
+    - `POST /notifications/staff-radio` — broadcast plain-text message to all STAFF-role WebSocket connections for a venue
+    - Log all staff radio messages to PostgreSQL with timestamp and sender staffId
+    - _Requirements: 32.4_
+  - [ ]* 6.6 Write property test for Red_Zone notification dispatch (P7)
+    - **Property 7: Red_Zone Notification Dispatch**
+    - **Validates: Requirements 2.4**
+    - Use fast-check to generate zone transitions to Red_Zone and assert dispatch includes all Attendees in zone Z and adjacent zones
+  - [ ]* 6.7 Write property test for SMS fallback delivery trigger (P25)
+    - **Property 25: SMS Fallback Delivery Trigger**
+    - **Validates: Requirements 20.1**
+    - Use fast-check to simulate FCM/APNs non-receipt within 30 s and assert SMS delivery is initiated for each such notification
+  - [ ]* 6.8 Write unit tests for Notification Service
+    - Test delivery channel selection logic, SMS fallback timer, BLE mesh payload construction, segmented targeting, and scheduled announcement dispatch
+    - _Requirements: 2.4, 5.2, 5.3, 32.1, 32.2, 32.3_
+
+- [x] 7. Implement Wayfinding Engine (Node.js)
+  - [x] 7.1 Implement Dijkstra routing on venue floor graph
+    - Load venue graph JSON from S3; build adjacency list; implement Dijkstra with Red_Zone nodes assigned infinite weight
+    - `POST /navigate` — return `NavigationRoute` with `RouteStep[]`
+    - _Requirements: 4.1, 4.2_
+  - [ ]* 7.2 Write property test for route completeness (P10)
+    - **Property 10: Route Completeness**
+    - **Validates: Requirements 4.1**
+    - Use fast-check to generate connected (source, destination) node pairs and assert a non-empty route with >=1 step is always returned
+  - [ ]* 7.3 Write property test for Red_Zone route avoidance (P11)
+    - **Property 11: Red_Zone Route Avoidance**
+    - **Validates: Requirements 4.2**
+    - Use fast-check to generate routes passing through a zone, transition that zone to Red_Zone, recalculate, and assert no step in the new route belongs to that zone (when an alternative path exists)
+  - [x] 7.4 Implement accessibility mode routing
+    - Remove all edges where `isAccessible = false` from the Dijkstra graph when accessibility mode is enabled
+    - _Requirements: 4.4, 21.1_
+  - [ ]* 7.5 Write property test for accessibility route constraint (P12)
+    - **Property 12: Accessibility Route Constraint**
+    - **Validates: Requirements 4.4, 21.1**
+    - Use fast-check to generate graphs with mixed accessible/non-accessible edges and assert no `RouteStep` in an accessibility-mode route traverses a non-accessible edge
+  - [x] 7.6 Implement route recalculation and deviation detection
+    - `POST /navigate/recalculate` — recalculate avoiding current Red_Zones
+    - Trigger recalculation when Attendee deviates >10 m from route; respond within 5 s
+    - _Requirements: 4.2, 4.7_
+  - [x] 7.7 Implement BLE beacon positioning and AR overlay support
+    - RSSI-based trilateration for blue-dot positioning (+-3 m accuracy)
+    - Fallback to dead reckoning via accelerometer when BLE unavailable
+    - Each `RouteStep` includes `beaconId` for AR anchor; `audioInstruction` string for TTS
+    - _Requirements: 4.5, 4.6, 21.2, 24.2_
+  - [ ]* 7.8 Write property test for accessibility route audio coverage (P26)
+    - **Property 26: Accessibility Route Audio Coverage**
+    - **Validates: Requirements 21.2, 24.2**
+    - Use fast-check to generate routes with accessibility + audio mode enabled and assert every `RouteStep` has a non-empty `audioInstruction`
+  - [ ]* 7.9 Write property test for offline route equivalence (P19)
+    - **Property 19: Offline Route Equivalence**
+    - **Validates: Requirements 10.2**
+    - Use fast-check to generate source/destination pairs and assert offline route (from cached graph) produces the same node sequence as online route using the same graph snapshot
+  - [ ]* 7.10 Write unit tests for Wayfinding Engine
+    - Test Dijkstra on small known graphs, Red_Zone weight assignment, accessibility edge removal, deviation detection threshold
+    - _Requirements: 4.1, 4.2, 4.4, 4.7_
+
+- [x] 8. Implement Mobile App — Phase 1 core (React Native)
+  - [x] 8.1 Implement offline-first storage layer
+    - Set up `expo-sqlite` for structured storage: venue map graph, navigation routes, emergency exits, QR ticket JWT
+    - Set up MMKV for fast key-value state: current zone state, user preferences
+    - Implement sync queue as a SQLite table of pending mutations
+    - _Requirements: 10.1, 10.3_
+  - [x] 8.2 Implement pre-event sync checklist
+    - Trigger 2 hours before event start; download: Mapbox offline tile pack, venue graph JSON, QR ticket JWT, emergency exit routes JSON, venue public key, pre-generated audio instructions, reward catalog
+    - Retry every 30 s on failure; warn user if incomplete 30 min before event; show persistent warning banner on Home screen if sync is incomplete 30 min before event
+    - _Requirements: 10.1, 10.4_
+  - [ ]* 8.3 Write property test for offline cache round-trip (P13)
+    - **Property 13: Offline Cache Round-Trip**
+    - **Validates: Requirements 5.6, 10.1, 10.3, 10.5**
+    - Use fast-check to assert that after pre-event sync, venue map graph, QR ticket JWT, and emergency exit routes are retrievable from local storage without network and match downloaded content
+  - [x] 8.4 Implement connectivity detection and sync queue replay
+    - Use `NetInfo` to detect connectivity changes; switch to offline mode immediately on loss
+    - On reconnect, replay sync queue in order (entry events → SOS signals → incident reports); server-wins conflict resolution for heatmap/routes; client-wins for pending entry events
+    - Show "You're back online — app updated" banner on reconnect; complete sync within 30 s
+    - _Requirements: 10.4_
+  - [x] 8.5 Implement registration, login, and onboarding screens
+    - Welcome screen (`/welcome`): VenueFlow logo, "Get Started" CTA, "I already have an account" link
+    - Registration screen (`/register`): name, email, phone (E.164 format), password (≥8 chars) fields with inline validation; `POST /auth/register`
+    - Login screen (`/login`): email + password; on success store access token + refresh token; on 401 show inline error
+    - Ticket linking screen (`/tickets/link`): QR scanner + manual ticket ID entry; cache ticket JWT locally on success
+    - Implement silent token refresh: when access token expires (15 min), call `POST /auth/refresh` silently; on refresh failure redirect to `/login` with "Session expired" message
+    - _Requirements: 6.5, 9.3, 9.5_
+  - [x] 8.6 Implement deep link routing
+    - Register URI scheme `venueflow://`; handle the following deep links:
+      - `venueflow://event/{eventId}` → Event heatmap view
+      - `venueflow://entry/{eventId}` → Entry Routing screen
+      - `venueflow://emergency/evacuate/{zoneId}` → Evacuation route screen (full-screen takeover, bypasses all navigation)
+    - Push notification tap routing: alert type → heatmap zone; order ready → order status screen; SOS → emergency panel
+    - _Requirements: 5.2, 5.6, 8.4_
+  - [x] 8.7 Implement heatmap view with WebSocket subscription
+    - Subscribe to `heatmap:{venueId}` WebSocket channel; render color-coded zone map (green/yellow/red/unavailable) with zone headcount labels and floor level toggle
+    - Display gate recommendation card and predicted wait time on Home Dashboard
+    - Show offline banner and disable live updates when `NetInfo` reports no connectivity
+    - Load within 5 s on 4G LTE under peak load
+    - _Requirements: 2.1, 2.2, 2.3, 1.1, 8.4_
+  - [x] 8.8 Implement QR ticket display and offline validation
+    - Render QR ticket from cached JWT without network at `/ticket`; show attendee name and seat section
+    - Implement offline RS256 signature validation using cached venue public key
+    - Show "Already entered" message on duplicate scan response
+    - _Requirements: 1.3, 1.4, 10.3_
+  - [x] 8.9 Implement location consent gate
+    - Prompt Attendee for explicit location consent at `/consent/location` before enabling navigation or zone-based alerts
+    - Block location access and transmission if consent not granted; show in-app explanation with OS settings deep link if OS permission denied
+    - _Requirements: 9.4_
+  - [ ]* 8.10 Write property test for location consent gate (P18)
+    - **Property 18: Location Consent Gate**
+    - **Validates: Requirements 9.4**
+    - Use fast-check to assert that any invocation of navigation or zone-alert features without granted consent does not access or transmit location data
+  - [x] 8.11 Implement turn-by-turn navigation UI with AR overlays
+    - Render `RouteStep[]` as turn-by-turn directions at `/navigate`; AR overlay on camera view when device supports it
+    - Show "Arrived" confirmation screen with nearby POIs (restrooms, kiosks) on route completion
+    - Deliver `audioInstruction` via native TTS (Android `TextToSpeech` / iOS `AVSpeechSynthesizer`)
+    - Fall back to map-based navigation when BLE unavailable; show "No route available" error when no path exists
+    - Show banner alert + automatic reroute within 5 s when zone on active route becomes Red_Zone
+    - _Requirements: 4.1, 4.5, 4.6, 4.7, 21.2_
+  - [x] 8.12 Implement voice command input
+    - Use Android `SpeechRecognizer` / iOS `SFSpeechRecognizer` for STT; mic button on navigation and home screens
+    - Map recognized phrases to intents: NAVIGATE_SEAT, NAVIGATE_EXIT, NAVIGATE_RESTROOM, NAVIGATE_KIOSK, OPEN_HEATMAP, CANCEL_NAVIGATION, REPEAT_INSTRUCTION
+    - Unrecognized intents trigger clarification prompt: "Sorry, I didn't catch that. Try saying 'find the nearest exit' or 'take me to my seat'."
+    - _Requirements: 24.1, 24.2_
+  - [x] 8.13 Implement SOS and emergency screens
+    - Persistent SOS FAB button on all screens; taps open SOS confirmation with 3-second cancel window
+    - General SOS: `POST /emergency/sos`; show "Help is on the way" screen with nearest first-aid station map pin; idempotent (one active SOS per attendee)
+    - Medical SOS at `/sos/medical`: severity selector (low/medium/high/critical), description field, `POST /medical/sos`; show "First aid staff dispatched" with estimated arrival and AED locations
+    - Evacuation alert screen (`/emergency/evacuate`): full-screen red banner "EVACUATE NOW", zone-specific exit route on map, audio instructions; triggered by deep link or push notification; works offline from cached exit routes
+    - Queue SOS offline: if submission fails, store in sync queue and show local alert with nearest exit
+    - _Requirements: 5.1, 5.2, 5.6, 29.1, 29.2_
+  - [x] 8.14 Implement incident reporting screen
+    - Report screen at `/report` accessible via Home FAB and navigation menu
+    - Incident type selector: Medical, Safety, Infrastructure, Suspicious Activity, Other
+    - Description text field, optional photo upload, location auto-filled from current zone
+    - On submit: `POST /incidents`; show confirmation with reference number; award +40 points toast if report validated
+    - Offline: queue in sync queue; auto-submit on reconnect; show "Report queued" confirmation
+    - _Requirements: 23.1, 9.4_
+  - [x] 8.15 Implement rewards dashboard screen
+    - Rewards screen at `/rewards`: current points balance, recent points history, available rewards catalog
+    - Reward detail screen: description, points cost, "Redeem" button → `POST /rewards/{attendeeId}/redeem/{rewardId}` → show voucher code/QR with validity period
+    - Leaderboard tab: `GET /rewards/leaderboard/{eventId}`
+    - Show in-app toast notifications for points awarded: gate entry (+50), off-peak kiosk order (+30), valid incident report (+40), pre-event sync (+20), accessible route (+25)
+    - _Requirements: 22.1, 22.2_
+  - [x] 8.16 Implement AED and medical station locator in Mobile App
+    - Render AED locations and first-aid stations as map pins on the venue heatmap view
+    - `GET /medical/stations/{venueId}` — returns list of AED and first-aid station locations with zone and floor level
+    - Cache station locations during pre-event sync for offline access
+    - _Requirements: 29.3_
+  - [x] 8.17 Implement parking zone map and transport guidance views
+    - Render parking zone availability as a color-coded overlay on the venue approach map
+    - Display shuttle/bus schedule with live tracking markers
+    - Show post-event staggered exit recommendations based on Attendee seat section
+    - Integrate ride-hailing deep links (Uber, Ola) with pre-filled venue exit coordinates
+    - _Requirements: 31.1, 31.2, 31.3, 31.4_
+
+- [x] 9. Checkpoint — Phase 1
+  - Ensure all Phase 1 tests pass, ask the user if questions arise.
+
+
+---
+
+## Phase 2 — Core: Queue Prediction, Seat-to-Kiosk Ordering, Staff Dashboard
+
+- [x] 10. Implement Queue Predictor (FastAPI + XGBoost)
+  - [x] 10.1 Implement prediction pipeline and XGBoost inference
+    - 60 s timer triggers: fetch zone densities from Redis, fetch weather enrichment from Redis, run XGBoost inference
+    - Features: current zone density, time-of-day, event phase, historical throughput, weather data
+    - Fallback to exponential moving average when model confidence is low
+    - Store predictions in Redis; publish to `queue.predictions` Kafka topic
+    - _Requirements: 3.1, 3.3, 3.6_
+  - [ ]* 10.2 Write property test for queue prediction availability (P8)
+    - **Property 8: Queue Prediction Availability**
+    - **Validates: Requirements 3.2**
+    - Use Hypothesis to generate active location IDs and assert Queue_Predictor always returns a response with non-negative `predictedWaitMinutes`
+  - [x] 10.3 Implement REST endpoints and alternative kiosk suggestion
+    - `GET /queues/{venueId}`, `GET /queues/{venueId}/kiosk/{kioskId}`, `GET /queues/{venueId}/kiosk/{kioskId}/alternatives`
+    - Alternatives endpoint returns kiosks with strictly shorter predicted wait than the queried kiosk
+    - _Requirements: 3.2, 3.5_
+  - [ ]* 10.4 Write property test for alternative kiosk suggestion (P9)
+    - **Property 9: Alternative Kiosk Suggestion**
+    - **Validates: Requirements 3.5**
+    - Use Hypothesis to generate kiosks with `predictedWaitMinutes > 10` and assert every suggested alternative has a strictly shorter wait time
+  - [ ]* 10.5 Write unit tests for Queue Predictor
+    - Test prediction pipeline with known density inputs, fallback EMA logic, and alternative kiosk selection
+    - _Requirements: 3.1, 3.3, 3.5_
+
+- [x] 11. Implement seat-to-kiosk ordering flow (Mobile App + Entry Router)
+  - [x] 11.1 Implement order placement and ready notification
+    - Mobile App: order form scoped to Attendee's seat section; `POST /orders` to Kiosk service
+    - Notification Service: push `alerts:{attendeeId}` WebSocket message when order status transitions to `ready`
+    - _Requirements: 3.4_
+  - [x] 11.2 Implement kiosk list, detail, and order screens (Mobile App)
+    - Kiosk list screen (`/queues`): list and map view of kiosks with predicted wait time badges color-coded (green <5 min, amber 5–10 min, red >10 min); updates every 60 s from Queue Predictor
+    - Kiosk detail screen (`/queues/:id`): menu items, current wait time; if wait >10 min show alternative kiosk banner "Try [Kiosk X] — only N min wait"; "Order from Seat" button
+    - Order form screen (`/orders/new`): item selector, quantity, seat pre-filled from ticket; "Place Order" button; preserve order state on failure with retry prompt
+    - Order confirmation screen: order summary, estimated ready time, "Get Directions" button
+    - Order status screen (`/orders/:id`): live status; on `ready` notification tap navigate here with directions CTA
+    - Show "This kiosk is currently unavailable" with alternatives when kiosk is offline
+    - _Requirements: 3.2, 3.4, 3.5_
+  - [ ]* 11.3 Write unit tests for order notification flow
+    - Test order status transitions and notification dispatch
+    - _Requirements: 3.4_
+
+- [x] 12. Implement Vendor & Concession Intelligence Service (Node.js)
+  - [x] 12.1 Implement per-kiosk revenue and footfall analytics
+    - Track transaction count, revenue, and dwell time per `kioskId` per event; store in PostgreSQL
+    - `GET /vendors/{venueId}/kiosks/{kioskId}/analytics?eventId={id}` — returns revenue, footfall, avg transaction value
+    - Expose aggregated vendor analytics to Operations Dashboard (ADMIN role)
+    - _Requirements: 30.1_
+  - [x] 12.2 Implement inventory depletion alert pipeline
+    - Kiosk operators POST inventory levels via `POST /vendors/kiosks/{kioskId}/inventory`
+    - When stock for any item falls below configurable threshold, publish alert to Notification Service targeting the kiosk operator
+    - _Requirements: 30.2_
+  - [x] 12.3 Implement dynamic pricing suggestion engine
+    - Compute demand surge score per kiosk from Queue_Predictor wait times and footfall data
+    - `GET /vendors/kiosks/{kioskId}/pricing-suggestions` — returns suggested price adjustments when demand score exceeds threshold
+    - _Requirements: 30.3_
+  - [x] 12.4 Implement vendor SLA compliance tracker
+    - Record order fulfillment timestamps; compute average fulfillment time per kiosk per event
+    - Flag kiosks exceeding SLA threshold (configurable per venue); surface in Operations Dashboard vendor panel
+    - _Requirements: 30.4_
+  - [ ]* 12.5 Write unit tests for Vendor Intelligence Service
+    - Test revenue aggregation, inventory threshold alerting, demand surge scoring, and SLA computation
+    - _Requirements: 30.1, 30.2, 30.3, 30.4_
+
+- [x] 13. Implement Staff & Resource Management Service (Node.js)
+  - [x] 13.1 Implement staff live location tracking
+    - STAFF-role users publish location updates via `POST /staff/location` (lat/lng + zoneId) every 30 s
+    - Store latest location per staffId in Redis with 60 s TTL; persist to PostgreSQL for audit
+    - Operations Dashboard renders staff pins on live heatmap (ADMIN role)
+    - _Requirements: 28.1_
+  - [x] 13.2 Implement dynamic redeployment suggestions
+    - When anomaly alert is generated for zone Z, query Redis for staff locations; suggest nearest available staff members for redeployment to Z
+    - `GET /staff/redeployment-suggestions?zoneId={id}` — returns ranked list of staff with distance to zone
+    - Extends anomaly alert panel in Operations Dashboard
+    - _Requirements: 28.2, 6.4_
+  - [x] 13.3 Implement shift scheduling and duty roster management
+    - `POST /staff/shifts` — create shift with staffId, startTime, endTime, assignedZoneId
+    - `GET /staff/shifts?venueId={id}&date={date}` — returns duty roster for the day
+    - `PATCH /staff/shifts/{shiftId}` — update shift assignment
+    - _Requirements: 28.3_
+  - [x] 13.4 Implement incident ownership assignment with SLA tracking
+    - `POST /incidents/{incidentId}/assign` — assign incident to staffId; record assignment timestamp
+    - Compute time-to-resolution per incident; flag incidents exceeding SLA threshold (configurable)
+    - `GET /staff/{staffId}/incidents` — returns open incidents assigned to staff member
+    - _Requirements: 28.4_
+  - [ ]* 13.5 Write unit tests for Staff & Resource Management Service
+    - Test location TTL expiry, redeployment ranking by distance, shift conflict detection, and SLA breach flagging
+    - _Requirements: 28.1, 28.2, 28.3, 28.4_
+
+- [x] 14. Implement Predictive Pre-Event Simulation Service (Python)
+  - [x] 14.1 Implement digital twin simulation engine
+    - Load historical sensor time-series from TimescaleDB and ticket sales data (seat zone distribution) from PostgreSQL
+    - Run agent-based crowd flow simulation to model gate load and zone density over event timeline
+    - Store simulation results as `SimulationSnapshot` records in PostgreSQL keyed by `(venueId, eventId, simulationRunId)`
+    - _Requirements: 27.1_
+  - [x] 14.2 Implement gate load forecasting
+    - Compute expected gate arrival rates from ticket seat zone distribution and historical entry patterns
+    - `GET /simulation/{venueId}/gate-forecast?eventId={id}` — returns per-gate expected queue depth over time
+    - _Requirements: 27.2_
+  - [x] 14.3 Implement recommended staff deployment plan generation
+    - Based on simulation results, generate a pre-event staff deployment plan: zone assignments, recommended headcount per zone, gate staffing levels
+    - `GET /simulation/{venueId}/staff-plan?eventId={id}` — returns structured deployment plan (JSON)
+    - Surface plan in Operations Dashboard pre-event view (ADMIN role)
+    - _Requirements: 27.3_
+  - [x] 14.4 Implement simulation REST endpoints
+    - `POST /simulation/{venueId}/run?eventId={id}` — trigger simulation run; returns `simulationRunId`
+    - `GET /simulation/{venueId}/runs/{simulationRunId}` — returns simulation status and results
+    - _Requirements: 27.1, 27.2, 27.3_
+  - [ ]* 14.5 Write unit tests for Predictive Simulation Service
+    - Test gate load forecast computation with known ticket distributions, staff plan generation logic, and simulation result storage
+    - _Requirements: 27.1, 27.2, 27.3_
+
+- [x] 15. Implement Operations Dashboard — Phase 2 (React Web)
+  - [x] 15.1 Implement live heatmap and flow rate views
+    - WebSocket subscription to `heatmap:{venueId}`; render zone headcounts updated every 10 s
+    - Display entry/exit flow rates per gate, updated every 10 s
+    - _Requirements: 6.1, 6.2_
+  - [x] 15.2 Implement anomaly alert panel with deployment recommendations
+    - Subscribe to Redis alerts; display anomaly alert prominently within 10 s of threshold crossing
+    - Show staff deployment recommendation referencing the affected zone
+    - _Requirements: 6.3, 6.4_
+  - [ ]* 15.3 Write property test for anomaly alert and deployment recommendation (P15)
+    - **Property 15: Anomaly Alert and Deployment Recommendation**
+    - **Validates: Requirements 6.3, 6.4**
+    - Use fast-check to generate zone density values exceeding configured thresholds and assert both an anomaly alert and a deployment recommendation referencing that zone are generated
+  - [x] 15.4 Implement venue configuration UI
+    - Zone editor: define zones, set Red_Zone thresholds, map sensor assignments
+    - Accessible to `ADMIN` role only
+    - _Requirements: 6.7_
+  - [x] 15.5 Implement RBAC-gated views
+    - Apply RBAC middleware to all dashboard routes per the role/feature permission matrix in the design
+    - _Requirements: 6.5_
+  - [x] 15.6 Implement staff location map overlay and redeployment panel
+    - Render staff pins on live heatmap using data from `GET /staff/locations?venueId={id}`
+    - Show redeployment suggestions panel when anomaly alert is active
+    - _Requirements: 28.1, 28.2_
+  - [x] 15.7 Implement pre-event simulation dashboard view
+    - Display gate load forecast charts and recommended staff deployment plan from Simulation Service
+    - Trigger simulation run button (ADMIN role); show simulation status and results
+    - _Requirements: 27.1, 27.2, 27.3_
+  - [x] 15.8 Implement vendor intelligence panel
+    - Per-kiosk revenue, footfall, and SLA compliance table (ADMIN role)
+    - Inventory depletion alert feed
+    - _Requirements: 30.1, 30.2, 30.4_
+  - [ ]* 15.9 Write unit tests for Operations Dashboard Phase 2 components
+    - Test RBAC view gating, anomaly alert rendering, zone configuration form validation, staff map overlay, and vendor panel data binding
+    - _Requirements: 6.5, 6.7, 28.1, 30.1_
+
+- [x] 16. Implement multi-event support (EventSession scoping)
+  - [x] 16.1 Add `eventId` scoping to all service queries
+    - All PostgreSQL queries, Redis keys, and Kafka event schemas include `eventId`
+    - API Gateway passes `eventId` as a required query parameter to all scoped endpoints
+    - _Requirements: 19.1_
+  - [x] 16.2 Implement event switcher in Operations Dashboard
+    - `GET /events?venueId={id}&status=active` populates switcher dropdown
+    - Switching updates `activeEventId` context; all subsequent API calls use new `eventId`
+    - Accessible to `ADMIN` role only
+    - _Requirements: 19.2_
+  - [ ]* 16.3 Write property test for multi-event data isolation (P24)
+    - **Property 24: Multi-Event Data Isolation**
+    - **Validates: Requirements 19.1**
+    - Use fast-check to generate two concurrent EventSessions E1 and E2 and assert any query scoped to E1 returns no records with `eventId = E2`, and vice versa
+
+- [x] 17. Implement Rewards Service (Node.js)
+  - [x] 17.1 Implement points award pipeline with idempotency
+    - Consume `gamification.events` Kafka topic; award points using composite deduplication key `(attendeeId, actionType, venueEventId, referenceId)`
+    - Discard duplicate events before crediting points
+    - _Requirements: 22.1_
+  - [x] 17.2 Implement REST endpoints and leaderboard
+    - `GET /rewards/{attendeeId}`, `POST /rewards/{attendeeId}/redeem/{rewardId}`, `GET /rewards/leaderboard/{eventId}`
+    - _Requirements: 22.1, 22.2_
+  - [ ]* 17.3 Write property test for gamification idempotency (P27)
+    - **Property 27: Gamification Idempotency**
+    - **Validates: Requirements 22.1**
+    - Use fast-check to submit the same qualifying action event with the same deduplication key multiple times and assert points are awarded exactly once
+  - [x]* 17.4 Write unit tests for Rewards Service
+    - Test deduplication key generation, points calculation per action type, and reward redemption status transitions
+    - _Requirements: 22.1, 22.2_
+
+- [x] 18. Implement External Integration Service (Node.js)
+  - [x] 18.1 Implement Maps/Traffic and Weather API adapters
+    - Fetch traffic conditions every 5 min; fetch weather every 15 min
+    - Publish enrichment data to `external.enrichment` Kafka topic
+    - Cache responses in Redis with matching TTLs (traffic: 5 min, weather: 15 min)
+    - _Requirements: 25.1, 25.2_
+  - [x] 18.2 Implement REST endpoints
+    - `GET /external/traffic/{venueId}`, `GET /external/weather/{venueId}`
+    - _Requirements: 25.1, 25.2_
+  - [x] 18.3 Implement Transport & Parking Coordination data adapters
+    - `GET /transport/parking/{venueId}` — aggregate parking zone availability from venue parking sensors; update every 60 s; cache in Redis
+    - `GET /transport/shuttles/{venueId}` — fetch shuttle/bus live positions from transit API; return schedule + live tracking data
+    - `GET /transport/exit-recommendations/{venueId}?seatSection={section}` — compute staggered exit time window based on seat section and current gate density
+    - _Requirements: 31.1, 31.2, 31.3_
+  - [x]* 18.4 Write unit tests for External Integration Service
+    - Test cache TTL enforcement, API adapter error handling, Kafka publish on successful fetch, and parking zone aggregation
+    - _Requirements: 25.1, 25.2, 31.1, 31.2_
+
+- [x] 19. Checkpoint — Phase 2
+  - Ensure all Phase 2 tests pass, ask the user if questions arise.
+
+
+---
+
+## Phase 3 — Safety: Emergency Coordination, SOS, Auto-PA Integration
+
+- [x] 20. Implement Emergency Coordinator (Node.js)
+  - [x] 20.1 Implement SOS submission and audit log
+    - `POST /emergency/sos` — store in PostgreSQL `emergency_audit` table (append-only); publish to `emergency.sos` Kafka topic; Notification Service pushes to Operations Dashboard WebSocket within 5 s
+    - _Requirements: 5.1, 5.7_
+  - [x] 20.2 Implement evacuation flow
+    - `POST /emergency/evacuate` — simultaneously: push FCM/APNs mass notification to all zone Attendees (<=10 s), trigger SMS fallback via Twilio/AWS SNS, send HTTP call to PA system API (<=15 s), switch Heatmap Engine to evacuation bottleneck mode
+    - `GET /emergency/status/{venueId}` — return current evacuation state
+    - _Requirements: 5.2, 5.3, 5.4, 5.5_
+  - [x] 20.3 Implement offline evacuation route delivery
+    - Pre-loaded emergency exit routes (JSON keyed by `zoneId`) stored in device SQLite at pre-event sync
+    - If app is offline during evacuation, display cached routes automatically based on last known zone
+    - _Requirements: 5.6, 10.5_
+  - [ ]* 20.4 Write property test for emergency audit log completeness (P14)
+    - **Property 14: Emergency Audit Log Completeness**
+    - **Validates: Requirements 5.7**
+    - Use fast-check to generate SOS signals, evacuation orders, and PA triggers and assert the audit log contains a matching entry with correct `eventId`, event type, and non-null timestamp recorded at or before processing
+  - [ ]* 20.5 Write unit tests for Emergency Coordinator
+    - Test SOS submission latency, evacuation trigger fan-out, PA adapter error handling, and audit log entry creation for each event type
+    - _Requirements: 5.1, 5.2, 5.3, 5.7_
+
+- [x] 21. Implement Medical & Safety Response Service (Node.js)
+  - [x] 21.1 Implement medical SOS flow (distinct from general SOS)
+    - `POST /medical/sos` — Attendee submits medical SOS with location and description; store in PostgreSQL `medical_sos` table; publish to `emergency.sos` Kafka topic with `type: 'medical'`
+    - Notification Service pushes to Operations Dashboard triage queue within 5 s
+    - _Requirements: 29.1_
+  - [x] 21.2 Implement first-aid auto-dispatch
+    - On medical SOS receipt, query Redis for nearest available first-aid personnel (STAFF role with `specialization: 'first_aid'`)
+    - `POST /medical/dispatch/{sosId}` — assign nearest first-aid staff; push dispatch notification to assigned staff via WebSocket
+    - Record dispatch timestamp and assigned staffId in PostgreSQL
+    - _Requirements: 29.2_
+  - [x] 21.3 Implement medical station and AED data endpoints
+    - `GET /medical/stations/{venueId}` — returns list of first-aid stations and AED locations with zoneId, floor level, and coordinates
+    - Seed station data via `POST /medical/stations` (ADMIN role); store in PostgreSQL
+    - _Requirements: 29.3_
+  - [x] 21.4 Implement triage priority queue on Operations Dashboard backend
+    - `GET /medical/triage/{venueId}` — returns open medical SOS events sorted by priority (severity + time elapsed)
+    - `PATCH /medical/sos/{sosId}/resolve` — mark SOS resolved with resolution notes
+    - _Requirements: 29.4_
+  - [ ]* 21.5 Write unit tests for Medical & Safety Response Service
+    - Test medical SOS dispatch assignment logic, triage priority ordering, and AED locator data retrieval
+    - _Requirements: 29.1, 29.2, 29.3, 29.4_
+
+- [x] 22. Implement BLE mesh alert delivery (Mobile App + Notification Service)
+  - [x] 22.1 Implement BLE mesh broadcast in Notification Service
+    - Construct `BLEMeshPayload` (31-byte BLE advertisement: `payloadId` + `alertType` + `zoneId`)
+    - Broadcast when internet is severed in a venue zone; full payload fetched from local SQLite cache by `payloadId` on receipt
+    - _Requirements: 20.2_
+  - [x] 22.2 Implement BLE mesh receiver in Mobile App
+    - Receive BLE advertisement; look up full `BLEMeshPayload` from SQLite by `payloadId`; surface as local notification
+    - Deduplicate by `payloadId`: surface exactly one notification per unique `payloadId`
+    - _Requirements: 20.2_
+  - [ ]* 22.3 Write property test for BLE mesh payload deduplication (P32)
+    - **Property 32: BLE Mesh Payload Deduplication**
+    - **Validates: Requirements 20.2**
+    - Use fast-check to simulate receiving the same `BLEMeshPayload` with the same `payloadId` multiple times and assert exactly one notification is surfaced to the Attendee
+
+- [x] 23. Implement Threat Detection Service (FastAPI)
+  - [x] 23.1 Implement suspicious movement pattern detector (LSTM)
+    - Consume `sensor.readings`; maintain 5-min sliding window of per-session zone transition sequences (anonymized by session token)
+    - Run LSTM inference; if anomaly score > threshold, publish to `threat.alerts` Kafka topic
+    - _Requirements: 18.1_
+  - [x] 23.2 Implement unauthorized access detector (rule-based)
+    - Cross-reference zone entry events with access control lists in PostgreSQL
+    - Trigger alert if `ATTENDEE`-role session token detected in zone where `isRestrictedAccess = true`
+    - _Requirements: 18.2_
+  - [x] 23.3 Implement facial recognition watchlist comparison
+    - Receive one-way perceptual hash from Entry Router at entry time
+    - Compare against pre-loaded watchlist of hashed embeddings; trigger `watchlist_match` ThreatAlert on match
+    - Discard hash after comparison (no raw biometric stored)
+    - _Requirements: 1.7, 18.1, 9.1_
+  - [x] 23.4 Implement REST endpoints and false-positive flood guard
+    - `GET /threats/{venueId}/active`, `POST /threats/{venueId}/resolve/{alertId}`
+    - Apply 60 s cooldown if alert rate exceeds 10/min for a single zone; raise calibration warning to Venue_Admin
+    - _Requirements: 18.1, 18.2_
+  - [ ]* 23.5 Write property test for threat alert generation completeness (P22)
+    - **Property 22: Threat Alert Generation Completeness**
+    - **Validates: Requirements 18.1**
+    - Use Hypothesis to generate movement sequences with anomaly score > threshold and assert exactly one `ThreatAlert` is generated; duplicate sensor events for the same session produce no duplicate alerts
+  - [ ]* 23.6 Write property test for unauthorized access alert correctness (P23)
+    - **Property 23: Unauthorized Access Alert Correctness**
+    - **Validates: Requirements 18.2**
+    - Use fast-check to generate entry events with `ATTENDEE`-role tokens in `isRestrictedAccess = true` zones and assert an unauthorized access alert is generated referencing the correct `zoneId` and session token
+  - [ ]* 23.7 Write unit tests for Threat Detection Service
+    - Test LSTM fallback to rule-based detection, false-positive flood cooldown, and watchlist hash comparison
+    - _Requirements: 18.1, 18.2_
+
+- [x] 24. Implement Incident Report Service (Node.js)
+  - [x] 24.1 Implement incident submission and AI prioritization pipeline
+    - `POST /incidents` — classify incident type via fine-tuned text classifier; assign priority score (1-5) based on type + zone density + duplicate signal boost
+    - Publish to `incident.reports` Kafka topic; Operations Dashboard sorted feed updates in real time
+    - _Requirements: 23.1, 23.2_
+  - [x] 24.2 Implement incident management endpoints
+    - `GET /incidents/{venueId}` — sorted by AI priority score descending
+    - `PATCH /incidents/{incidentId}/resolve` — staff resolves incident
+    - _Requirements: 23.1, 23.2_
+  - [ ]* 24.3 Write property test for incident priority ordering (P28)
+    - **Property 28: Incident Priority Ordering**
+    - **Validates: Requirements 23.2**
+    - Use fast-check to generate pairs of incident reports (I1 with P1 > P2 for I2) and assert the Operations Dashboard feed displays I1 before I2 when sorted by priority
+  - [ ]* 24.4 Write unit tests for Incident Report Service
+    - Test priority score calculation for all type/density/duplicate combinations, and incident status transitions
+    - _Requirements: 23.1, 23.2_
+
+- [x] 25. Implement Compliance & Audit Management Service (Node.js)
+  - [x] 25.1 Implement fire-code capacity checker
+    - Subscribe to `heatmap:{venueId}` Redis channel; compare current zone occupancy against fire-code capacity limit (configurable per zone, separate from Red_Zone threshold)
+    - When any zone exceeds fire-code capacity, publish compliance alert to Operations Dashboard and append to `compliance_audit` PostgreSQL table
+    - `GET /compliance/{venueId}/capacity-status` — returns per-zone occupancy vs. fire-code limit
+    - _Requirements: 33.1_
+  - [x] 25.2 Implement automated audit trail
+    - Extend `emergency_audit` table to capture all incidents, SOS signals, evacuations, and PA triggers with actor ID, timestamp, zone, and resolution status
+    - `GET /compliance/{venueId}/audit-trail?eventId={id}&from={ts}&to={ts}` — paginated audit log export (JSON/CSV)
+    - _Requirements: 33.2, 5.7_
+  - [x] 25.3 Implement regulatory report generation
+    - `POST /compliance/{venueId}/reports/generate?eventId={id}&reportType={insurance|regulatory}` — compile event summary: attendance, peak density, incident count, SOS count, evacuation events, response times
+    - Return report as PDF or JSON; store in S3 with event-scoped path
+    - _Requirements: 33.3_
+  - [x] 25.4 Implement GDPR consent dashboard backend
+    - `GET /compliance/gdpr/consents?venueId={id}` — returns consent records per attendee (anonymized by attendeeId hash)
+    - `DELETE /compliance/gdpr/consents/{attendeeId}` — triggers account deletion + data anonymization pipeline (extends Auth Service `DELETE /auth/account`)
+    - `GET /compliance/gdpr/export/{attendeeId}` — returns all stored data for an attendee (GDPR data portability)
+    - _Requirements: 33.4, 9.3_
+  - [ ]* 25.5 Write unit tests for Compliance & Audit Management Service
+    - Test fire-code threshold alerting, audit trail append-only constraint, report generation completeness, and GDPR deletion cascade
+    - _Requirements: 33.1, 33.2, 33.3, 33.4_
+
+- [x] 26. Add emergency, threat, medical, and compliance panels to Operations Dashboard (React Web)
+  - [x] 26.1 Implement emergency control panel
+    - SOS list (real-time via WebSocket `emergency:{venueId}`), evacuation trigger button (EMERGENCY role only), PA trigger button
+    - Evacuation confirm screen: zone selector + "Confirm Evacuation" button requiring a 5-second press-and-hold to prevent accidental triggers; on confirm simultaneously dispatch FCM/APNs push, SMS fallback, and PA system HTTP call
+    - Real-time bottleneck map during active evacuation showing zone clear status and SOS count
+    - _Requirements: 5.1, 5.2, 5.3, 5.5_
+  - [x] 26.2 Implement threat alert panel and incident report feed
+    - Active threat alerts (suspicious movement, unauthorized access, watchlist match) with resolve action
+    - AI-prioritized incident report feed with real-time updates
+    - _Requirements: 18.1, 18.2, 23.1, 23.2_
+  - [x] 26.3 Implement medical triage queue panel
+    - Real-time triage queue from `GET /medical/triage/{venueId}`; sorted by priority
+    - Dispatch action button; resolve action with notes field
+    - AED and first-aid station map overlay
+    - _Requirements: 29.1, 29.2, 29.4_
+  - [x] 26.4 Implement compliance and audit panel
+    - Per-zone fire-code capacity status table with real-time updates
+    - Audit trail log viewer with date/time filter and CSV export
+    - Regulatory report generation trigger (ADMIN role)
+    - GDPR consent management view (ADMIN role)
+    - _Requirements: 33.1, 33.2, 33.3, 33.4_
+  - [ ]* 26.5 Write unit tests for Phase 3 dashboard panels
+    - Test SOS list rendering, evacuation button RBAC guard, incident feed sort order, triage queue priority rendering, and compliance table data binding
+    - _Requirements: 5.1, 6.5, 23.2, 29.4, 33.1_
+
+- [x] 27. Checkpoint — Phase 3
+  - Ensure all Phase 3 tests pass, ask the user if questions arise.
+
+
+---
+
+## Phase 4 — Analytics: Post-Event Reports, ML Model Improvement, Admin Portal
+
+- [x] 28. Implement Analytics Service (FastAPI)
+  - [x] 28.1 Implement heatmap replay endpoint
+    - `GET /analytics/{venueId}/replay?from={ts}&to={ts}&interval={seconds}` — query TimescaleDB; stream `ZoneDensitySnapshot` records in chronological order; consecutive snapshots <=10 s apart
+    - _Requirements: 17.1_
+  - [ ]* 28.2 Write property test for heatmap replay completeness (P20)
+    - **Property 20: Heatmap Replay Completeness**
+    - **Validates: Requirements 17.1**
+    - Use Hypothesis to generate time windows [T1, T2] and assert the replay endpoint returns snapshots for every zone with consecutive gaps <=10 s and all timestamps within [T1, T2]
+  - [x] 28.3 Implement congestion trends endpoint
+    - `GET /analytics/{venueId}/congestion-trends?period={day|week|month}` — TimescaleDB time-bucket aggregations; cache in Redis with 5 min TTL
+    - _Requirements: 17.2_
+  - [ ]* 28.4 Write property test for congestion trend monotonic aggregation (P21)
+    - **Property 21: Congestion Trend Monotonic Aggregation**
+    - **Validates: Requirements 17.2**
+    - Use Hypothesis to generate time bucket pairs (B1 ends before B2 begins) and assert they are returned in chronological order with non-overlapping timestamps
+  - [x] 28.5 Implement incident analytics and post-event report endpoints
+    - `GET /analytics/{venueId}/incidents?eventId={id}` — aggregate by type, zone, resolution time
+    - `GET /analytics/{venueId}/events/{eventId}/report` — generate full post-event PDF/JSON report
+    - _Requirements: 17.3, 6.6_
+  - [ ]* 28.6 Write unit tests for Analytics Service
+    - Test replay gap enforcement, congestion trend ordering, and incident aggregation grouping
+    - _Requirements: 17.1, 17.2, 17.3_
+
+- [x] 29. Implement Sponsor & Monetization Analytics Service (FastAPI)
+  - [x] 29.1 Implement sponsor dwell time and footfall heatmaps
+    - Define `SponsorZone` records in PostgreSQL: `sponsorZoneId`, `venueId`, `zoneId`, `sponsorName`, `boothCoordinates`
+    - Aggregate `ZoneDensitySnapshot` records for sponsor zones; compute dwell time distribution and footfall count per sponsor zone per event
+    - `GET /sponsors/{venueId}/zones/{sponsorZoneId}/analytics?eventId={id}` — returns dwell time histogram, peak footfall, and total unique visitors
+    - _Requirements: 34.1_
+  - [x] 29.2 Implement proximity-triggered in-app offers
+    - When Attendee enters a zone adjacent to a `SponsorZone`, publish offer event to Notification Service
+    - `POST /sponsors/offers` — ADMIN creates offer: `sponsorZoneId`, `message`, `deepLink`, `validUntil`
+    - Notification Service delivers offer as push notification to Attendee; deduplicate by `(attendeeId, offerId, eventId)` — deliver at most once per event
+    - _Requirements: 34.2_
+  - [x] 29.3 Implement post-event sponsor performance reports
+    - `GET /sponsors/{venueId}/reports/{sponsorZoneId}?eventId={id}` — compile: total footfall, avg dwell time, offer delivery count, offer click-through rate
+    - Return as JSON or PDF; store in S3 with sponsor-scoped path
+    - _Requirements: 34.3_
+  - [ ]* 29.4 Write unit tests for Sponsor Analytics Service
+    - Test dwell time aggregation from density snapshots, offer deduplication logic, and report compilation completeness
+    - _Requirements: 34.1, 34.2, 34.3_
+
+- [x] 30. Implement ML Pipeline Service (Python)
+  - [x] 30.1 Implement post-event retraining pipeline
+    - Consume `ml.retraining.trigger` Kafka event; export sensor time-series from TimescaleDB to S3 (Parquet); export queue observations from PostgreSQL
+    - Retrain XGBoost model; evaluate MAPE on held-out subset
+    - Promote new model only if `new_model.MAPE < current_model.MAPE`; store in S3 with version tag; update `MLModelVersion` record in PostgreSQL
+    - _Requirements: 26.1, 26.2_
+  - [ ]* 30.2 Write property test for post-event retraining promotion guard (P30)
+    - **Property 30: Post-Event Retraining Promotion Guard**
+    - **Validates: Requirements 26.2**
+    - Use Hypothesis to generate (M_new, M_current) MAPE pairs and assert M_new is promoted iff `M_new.MAPE < M_current.MAPE`
+  - [x] 30.3 Implement model version REST endpoints
+    - `GET /ml/models/{serviceId}` — version history; `POST /ml/retrain/{eventId}` — manual trigger
+    - Record `modelVersion` string in every Queue_Predictor and Threat Detection Service prediction output
+    - _Requirements: 26.2_
+  - [ ]* 30.4 Write property test for ML model version traceability (P29)
+    - **Property 29: ML Model Version Traceability**
+    - **Validates: Requirements 26.2**
+    - Use Hypothesis to generate predictions and assert each prediction's `modelVersion` corresponds to an existing `MLModelVersion` record whose `isActive` was true at prediction time
+  - [ ]* 30.5 Write unit tests for ML Pipeline Service
+    - Test MAPE comparison promotion guard, S3 artifact versioning, and retraining failure handling
+    - _Requirements: 26.1, 26.2_
+
+- [x] 31. Implement Analytics Dashboard views in Operations Dashboard (React Web)
+  - [x] 31.1 Implement heatmap replay player
+    - Scrubber UI consuming `GET /analytics/{venueId}/replay`; render zone snapshots at selected timestamp
+    - _Requirements: 17.1_
+  - [x] 31.2 Implement congestion trends charts and incident analytics view
+    - Time-series charts for congestion trends; incident analytics table grouped by type/zone/resolution time
+    - _Requirements: 17.2, 17.3_
+  - [x] 31.3 Implement post-event report generation and ML model version viewer
+    - Trigger `GET /analytics/{venueId}/events/{eventId}/report`; display/download PDF or JSON
+    - ML model version history table (ADMIN role only)
+    - _Requirements: 6.6, 26.2_
+  - [x] 31.4 Implement sponsor analytics dashboard view
+    - Per-sponsor-zone footfall heatmap overlay on venue map
+    - Dwell time charts and offer performance metrics table (ADMIN role)
+    - Sponsor report download trigger
+    - _Requirements: 34.1, 34.2, 34.3_
+  - [ ]* 31.5 Write unit tests for Analytics Dashboard components
+    - Test replay scrubber rendering, congestion chart data binding, RBAC guard on ML version view, and sponsor analytics table rendering
+    - _Requirements: 17.1, 17.2, 6.5, 34.1_
+
+- [x] 32. Implement auto-scaling and failover configuration
+  - [x] 32.1 Configure ECS/EKS auto-scaling policies
+    - Scale out when CPU/memory > 80% of configured capacity; target tracking scaling policies per service
+    - _Requirements: 8.3_
+  - [x] 32.2 Configure Route 53 health-check failover
+    - Primary region health checks; warm standby region receives continuous data replication; failover within 10 s of primary failure
+    - _Requirements: 8.5_
+  - [ ]* 32.3 Write integration smoke tests
+    - Verify: Kafka throughput 500k concurrent streams without consumer lag; load test 500k concurrent users p95 heatmap <=5 s; failover routes requests to healthy instance <=10 s; auto-scaling triggers on >80% load
+    - _Requirements: 8.1, 8.3, 8.4, 8.5_
+
+- [x] 33. Final checkpoint — Ensure all tests pass
+  - Run full test suite (unit, property-based, integration, smoke); ensure all property tests complete >=100 iterations each; ask the user if questions arise.
+
+---
+
+## Notes
+
+- Tasks marked with `*` are optional and can be skipped for a faster MVP
+- Each task references specific requirements for traceability
+- Property tests use **fast-check** for Node.js/TypeScript services and **Hypothesis** for Python/FastAPI services; each test tagged with `// Feature: venueflow-platform, Property {N}: {property_text}`
+- Checkpoints at the end of each phase ensure incremental validation before proceeding
+- All 32 correctness properties from the design document are covered by property test sub-tasks
+- R27–R34 are fully integrated across phases: simulation (Phase 2), staff/medical/compliance (Phase 3), sponsor analytics (Phase 4)

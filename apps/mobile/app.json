@@ -1,0 +1,61 @@
+{
+  "expo": {
+    "name": "VenueFlow",
+    "slug": "venueflow",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#1a1a2e"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.venueflow.app",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "VenueFlow uses your location for indoor navigation and zone-based alerts.",
+        "NSLocationAlwaysUsageDescription": "VenueFlow uses your location for indoor navigation and zone-based alerts.",
+        "NSCameraUsageDescription": "VenueFlow uses the camera to scan QR tickets and provide AR navigation overlays.",
+        "NSMicrophoneUsageDescription": "VenueFlow uses the microphone for voice commands.",
+        "NSSpeechRecognitionUsageDescription": "VenueFlow uses speech recognition for voice navigation commands."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#1a1a2e"
+      },
+      "package": "com.venueflow.app",
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "CAMERA",
+        "RECORD_AUDIO",
+        "INTERNET",
+        "ACCESS_NETWORK_STATE"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "scheme": "venueflow",
+    "plugins": [
+      "expo-sqlite",
+      "expo-camera",
+      "expo-location",
+      [
+        "expo-barcode-scanner",
+        {
+          "cameraPermission": "Allow VenueFlow to access camera for QR scanning."
+        }
+      ]
+    ],
+    "extra": {
+      "apiBaseUrl": "https://api.venueflow.app",
+      "wsBaseUrl": "wss://ws.venueflow.app"
+    }
+  }
+}

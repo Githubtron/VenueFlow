@@ -1,0 +1,26 @@
+{
+  "name": "venueflow",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "services/auth-service",
+    "services/iot-gateway",
+    "services/entry-router",
+    "services/wayfinding-engine",
+    "services/emergency-coordinator",
+    "services/notification-service",
+    "services/vendor-intelligence",
+    "services/staff-management",
+    "services/rewards-service",
+    "services/external-integration",
+    "services/incident-service",
+    "services/compliance-service",
+    "services/kiosk-service",
+    "services/event-service"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present"
+  }
+}
