@@ -27,11 +27,11 @@ Incremental implementation across four phases matching the PRD roadmap. Each pha
     - Define permission matrix for `ATTENDEE`, `STAFF`, `ADMIN`, `EMERGENCY` roles
     - Middleware rejects requests where `(role, function)` pair is not in the authorized set
     - _Requirements: 6.5_
-  - [ ]* 2.3 Write property test for RBAC (P16)
+  - [x]* 2.3 Write property test for RBAC (P16)
     - **Property 16: Role-Based Access Control**
     - **Validates: Requirements 6.5**
     - Use fast-check to generate arbitrary `(role, function)` pairs and assert the access check returns authorized iff the pair is in the permission matrix; no role may access a function outside its set
-  - [ ]* 2.4 Write unit tests for Auth Service
+  - [x]* 2.4 Write unit tests for Auth Service
     - Test token issuance, expiry, refresh rotation, and account deletion anonymization
     - _Requirements: 6.5, 9.3_
 
@@ -44,7 +44,7 @@ Incremental implementation across four phases matching the PRD roadmap. Each pha
   - [x] 3.2 Implement sensor heartbeat monitor (Kafka Streams processor)
     - Track last-seen timestamp per `sensorId`; emit `sensor.failures` event to Kafka if no reading within 30 s
     - _Requirements: 7.3_
-  - [ ]* 3.3 Write integration smoke test
+  - [x]* 3.3 Write integration smoke test
     - Verify Kafka topic retention >=7 days and that a produced `SensorReading` is consumable within 1 s
     - _Requirements: 7.1, 7.4_
 
@@ -57,11 +57,11 @@ Incremental implementation across four phases matching the PRD roadmap. Each pha
     - Map `densityPercent` to `green | yellow | red` using configurable thresholds per zone
     - Mark zone `unavailable` if `lastUpdated` is >30 s in the past
     - _Requirements: 2.3, 2.7_
-  - [ ]* 4.3 Write property test for density classification monotonicity (P5)
+  - [x]* 4.3 Write property test for density classification monotonicity (P5)
     - **Property 5: Zone Density Classification Monotonicity**
     - **Validates: Requirements 2.3**
     - Use Hypothesis to generate pairs (D1, D2) with D1 < D2 and assert classifier(D1) severity <= classifier(D2) severity
-  - [ ]* 4.4 Write property test for stale sensor data marking (P6)
+  - [x]* 4.4 Write property test for stale sensor data marking (P6)
     - **Property 6: Stale Sensor Data Marking**
     - **Validates: Requirements 2.7**
     - Use Hypothesis to generate zone states with `lastUpdated` > 30 s ago and assert status is `unavailable`
@@ -70,11 +70,11 @@ Incremental implementation across four phases matching the PRD roadmap. Each pha
     - Implement `GET /heatmap/{venueId}`, `GET /heatmap/{venueId}/zones/{zoneId}`
     - Implement `GET /heatmap/{venueId}/replay?from={ts}&to={ts}` querying TimescaleDB
     - _Requirements: 2.1, 2.2, 2.5, 2.6_
-  - [ ]* 4.6 Write property test for heatmap anonymization (P17)
+  - [x]* 4.6 Write property test for heatmap anonymization (P17)
     - **Property 17: Heatmap Anonymization**
     - **Validates: Requirements 7.5, 9.2**
     - Use Hypothesis to assert every `ZoneDensitySnapshot` output contains only zone-level aggregate fields and no attendee-identifiable fields
-  - [ ]* 4.7 Write unit tests for Heatmap Engine
+  - [x]* 4.7 Write unit tests for Heatmap Engine
     - Test window aggregation with known sensor inputs, boundary density values, and sensor-silence marking
     - _Requirements: 2.1, 2.3, 2.7_
 
@@ -84,14 +84,14 @@ Incremental implementation across four phases matching the PRD roadmap. Each pha
     - Return gate with lowest score + `predictedWaitMinutes`; recalculate every 10 s
     - `GET /entry/recommendation/{attendeeId}`
     - _Requirements: 1.1, 1.2_
-  - [ ]* 5.2 Write property test for gate recommendation completeness (P1)
+  - [x]* 5.2 Write property test for gate recommendation completeness (P1)
     - **Property 1: Gate Recommendation Completeness**
     - **Validates: Requirements 1.1**
     - Use fast-check to generate valid venue states with >=1 active gate and assert response always contains a valid `gateId` and non-negative `predictedWaitMinutes`
   - [x] 5.3 Implement Red_Zone gate reassignment push
     - Subscribe to Redis `heatmap:{venueId}` updates; if an Attendee's assigned gate transitions to Red_Zone, push revised recommendation via WebSocket
     - _Requirements: 1.5_
-  - [ ]* 5.4 Write property test for Red_Zone gate reassignment (P3)
+  - [x]* 5.4 Write property test for Red_Zone gate reassignment (P3)
     - **Property 3: Red_Zone Gate Reassignment**
     - **Validates: Requirements 1.5**
     - Use fast-check to generate Attendee/gate assignments and assert that when gate G becomes Red_Zone, the updated recommendation returns a gate != G
@@ -99,22 +99,22 @@ Incremental implementation across four phases matching the PRD roadmap. Each pha
     - `POST /entry/scan` — verify RS256 JWT signature using cached venue public key; record entry event in PostgreSQL; return within 3 s
     - Idempotent: second scan of same `ticketId` returns `ALREADY_ENTERED`
     - _Requirements: 1.3, 1.4_
-  - [ ]* 5.6 Write property test for offline QR validation correctness (P2)
+  - [x]* 5.6 Write property test for offline QR validation correctness (P2)
     - **Property 2: Offline QR Validation Correctness**
     - **Validates: Requirements 1.3**
     - Use fast-check to generate valid and tampered/expired JWTs; assert validator accepts only correctly signed, non-expired tokens
   - [x] 5.7 Implement face-scan entry endpoint
     - `POST /entry/face-scan` — compute one-way perceptual hash of face embedding; pass hash to Threat Detection Service; record entry event; discard raw embedding immediately
     - _Requirements: 1.7, 1.8, 9.1_
-  - [ ]* 5.8 Write property test for no biometric data post-entry (P4)
+  - [x]* 5.8 Write property test for no biometric data post-entry (P4)
     - **Property 4: No Biometric Data Post-Entry**
     - **Validates: Requirements 1.8, 9.1**
     - Use fast-check to generate entry events (QR and face-scan) and assert that after recording, querying the DB for biometric data returns no results
-  - [ ]* 5.9 Write property test for facial recognition no-biometric storage (P31)
+  - [x]* 5.9 Write property test for facial recognition no-biometric storage (P31)
     - **Property 31: Facial Recognition No-Biometric Storage**
     - **Validates: Requirements 1.7, 1.8, 9.1, 18.1**
     - Use fast-check to assert that after any face-scan entry, no raw embedding is retrievable from any store; only the perceptual hash may exist and only for the active event session
-  - [ ]* 5.10 Write unit tests for Entry Router
+  - [x]* 5.10 Write unit tests for Entry Router
     - Test gate scoring with known density inputs, offline JWT validation edge cases, duplicate scan idempotency
     - _Requirements: 1.1, 1.3, 1.4, 1.5_
 
@@ -142,15 +142,15 @@ Incremental implementation across four phases matching the PRD roadmap. Each pha
     - `POST /notifications/staff-radio` — broadcast plain-text message to all STAFF-role WebSocket connections for a venue
     - Log all staff radio messages to PostgreSQL with timestamp and sender staffId
     - _Requirements: 32.4_
-  - [ ]* 6.6 Write property test for Red_Zone notification dispatch (P7)
+  - [x]* 6.6 Write property test for Red_Zone notification dispatch (P7)
     - **Property 7: Red_Zone Notification Dispatch**
     - **Validates: Requirements 2.4**
     - Use fast-check to generate zone transitions to Red_Zone and assert dispatch includes all Attendees in zone Z and adjacent zones
-  - [ ]* 6.7 Write property test for SMS fallback delivery trigger (P25)
+  - [x]* 6.7 Write property test for SMS fallback delivery trigger (P25)
     - **Property 25: SMS Fallback Delivery Trigger**
     - **Validates: Requirements 20.1**
     - Use fast-check to simulate FCM/APNs non-receipt within 30 s and assert SMS delivery is initiated for each such notification
-  - [ ]* 6.8 Write unit tests for Notification Service
+  - [x]* 6.8 Write unit tests for Notification Service
     - Test delivery channel selection logic, SMS fallback timer, BLE mesh payload construction, segmented targeting, and scheduled announcement dispatch
     - _Requirements: 2.4, 5.2, 5.3, 32.1, 32.2, 32.3_
 
@@ -159,18 +159,18 @@ Incremental implementation across four phases matching the PRD roadmap. Each pha
     - Load venue graph JSON from S3; build adjacency list; implement Dijkstra with Red_Zone nodes assigned infinite weight
     - `POST /navigate` — return `NavigationRoute` with `RouteStep[]`
     - _Requirements: 4.1, 4.2_
-  - [ ]* 7.2 Write property test for route completeness (P10)
+  - [x]* 7.2 Write property test for route completeness (P10)
     - **Property 10: Route Completeness**
     - **Validates: Requirements 4.1**
     - Use fast-check to generate connected (source, destination) node pairs and assert a non-empty route with >=1 step is always returned
-  - [ ]* 7.3 Write property test for Red_Zone route avoidance (P11)
+  - [x]* 7.3 Write property test for Red_Zone route avoidance (P11)
     - **Property 11: Red_Zone Route Avoidance**
     - **Validates: Requirements 4.2**
     - Use fast-check to generate routes passing through a zone, transition that zone to Red_Zone, recalculate, and assert no step in the new route belongs to that zone (when an alternative path exists)
   - [x] 7.4 Implement accessibility mode routing
     - Remove all edges where `isAccessible = false` from the Dijkstra graph when accessibility mode is enabled
     - _Requirements: 4.4, 21.1_
-  - [ ]* 7.5 Write property test for accessibility route constraint (P12)
+  - [x]* 7.5 Write property test for accessibility route constraint (P12)
     - **Property 12: Accessibility Route Constraint**
     - **Validates: Requirements 4.4, 21.1**
     - Use fast-check to generate graphs with mixed accessible/non-accessible edges and assert no `RouteStep` in an accessibility-mode route traverses a non-accessible edge
@@ -183,15 +183,15 @@ Incremental implementation across four phases matching the PRD roadmap. Each pha
     - Fallback to dead reckoning via accelerometer when BLE unavailable
     - Each `RouteStep` includes `beaconId` for AR anchor; `audioInstruction` string for TTS
     - _Requirements: 4.5, 4.6, 21.2, 24.2_
-  - [ ]* 7.8 Write property test for accessibility route audio coverage (P26)
+  - [x]* 7.8 Write property test for accessibility route audio coverage (P26)
     - **Property 26: Accessibility Route Audio Coverage**
     - **Validates: Requirements 21.2, 24.2**
     - Use fast-check to generate routes with accessibility + audio mode enabled and assert every `RouteStep` has a non-empty `audioInstruction`
-  - [ ]* 7.9 Write property test for offline route equivalence (P19)
+  - [x]* 7.9 Write property test for offline route equivalence (P19)
     - **Property 19: Offline Route Equivalence**
     - **Validates: Requirements 10.2**
     - Use fast-check to generate source/destination pairs and assert offline route (from cached graph) produces the same node sequence as online route using the same graph snapshot
-  - [ ]* 7.10 Write unit tests for Wayfinding Engine
+  - [x]* 7.10 Write unit tests for Wayfinding Engine
     - Test Dijkstra on small known graphs, Red_Zone weight assignment, accessibility edge removal, deviation detection threshold
     - _Requirements: 4.1, 4.2, 4.4, 4.7_
 
@@ -205,7 +205,7 @@ Incremental implementation across four phases matching the PRD roadmap. Each pha
     - Trigger 2 hours before event start; download: Mapbox offline tile pack, venue graph JSON, QR ticket JWT, emergency exit routes JSON, venue public key, pre-generated audio instructions, reward catalog
     - Retry every 30 s on failure; warn user if incomplete 30 min before event; show persistent warning banner on Home screen if sync is incomplete 30 min before event
     - _Requirements: 10.1, 10.4_
-  - [ ]* 8.3 Write property test for offline cache round-trip (P13)
+  - [x]* 8.3 Write property test for offline cache round-trip (P13)
     - **Property 13: Offline Cache Round-Trip**
     - **Validates: Requirements 5.6, 10.1, 10.3, 10.5**
     - Use fast-check to assert that after pre-event sync, venue map graph, QR ticket JWT, and emergency exit routes are retrievable from local storage without network and match downloaded content
@@ -243,7 +243,7 @@ Incremental implementation across four phases matching the PRD roadmap. Each pha
     - Prompt Attendee for explicit location consent at `/consent/location` before enabling navigation or zone-based alerts
     - Block location access and transmission if consent not granted; show in-app explanation with OS settings deep link if OS permission denied
     - _Requirements: 9.4_
-  - [ ]* 8.10 Write property test for location consent gate (P18)
+  - [x]* 8.10 Write property test for location consent gate (P18)
     - **Property 18: Location Consent Gate**
     - **Validates: Requirements 9.4**
     - Use fast-check to assert that any invocation of navigation or zone-alert features without granted consent does not access or transmit location data
@@ -306,7 +306,7 @@ Incremental implementation across four phases matching the PRD roadmap. Each pha
     - Fallback to exponential moving average when model confidence is low
     - Store predictions in Redis; publish to `queue.predictions` Kafka topic
     - _Requirements: 3.1, 3.3, 3.6_
-  - [ ]* 10.2 Write property test for queue prediction availability (P8)
+  - [x]* 10.2 Write property test for queue prediction availability (P8)
     - **Property 8: Queue Prediction Availability**
     - **Validates: Requirements 3.2**
     - Use Hypothesis to generate active location IDs and assert Queue_Predictor always returns a response with non-negative `predictedWaitMinutes`
@@ -314,11 +314,11 @@ Incremental implementation across four phases matching the PRD roadmap. Each pha
     - `GET /queues/{venueId}`, `GET /queues/{venueId}/kiosk/{kioskId}`, `GET /queues/{venueId}/kiosk/{kioskId}/alternatives`
     - Alternatives endpoint returns kiosks with strictly shorter predicted wait than the queried kiosk
     - _Requirements: 3.2, 3.5_
-  - [ ]* 10.4 Write property test for alternative kiosk suggestion (P9)
+  - [x]* 10.4 Write property test for alternative kiosk suggestion (P9)
     - **Property 9: Alternative Kiosk Suggestion**
     - **Validates: Requirements 3.5**
     - Use Hypothesis to generate kiosks with `predictedWaitMinutes > 10` and assert every suggested alternative has a strictly shorter wait time
-  - [ ]* 10.5 Write unit tests for Queue Predictor
+  - [x]* 10.5 Write unit tests for Queue Predictor
     - Test prediction pipeline with known density inputs, fallback EMA logic, and alternative kiosk selection
     - _Requirements: 3.1, 3.3, 3.5_
 
@@ -335,7 +335,7 @@ Incremental implementation across four phases matching the PRD roadmap. Each pha
     - Order status screen (`/orders/:id`): live status; on `ready` notification tap navigate here with directions CTA
     - Show "This kiosk is currently unavailable" with alternatives when kiosk is offline
     - _Requirements: 3.2, 3.4, 3.5_
-  - [ ]* 11.3 Write unit tests for order notification flow
+  - [x]* 11.3 Write unit tests for order notification flow
     - Test order status transitions and notification dispatch
     - _Requirements: 3.4_
 
@@ -357,7 +357,7 @@ Incremental implementation across four phases matching the PRD roadmap. Each pha
     - Record order fulfillment timestamps; compute average fulfillment time per kiosk per event
     - Flag kiosks exceeding SLA threshold (configurable per venue); surface in Operations Dashboard vendor panel
     - _Requirements: 30.4_
-  - [ ]* 12.5 Write unit tests for Vendor Intelligence Service
+  - [x]* 12.5 Write unit tests for Vendor Intelligence Service
     - Test revenue aggregation, inventory threshold alerting, demand surge scoring, and SLA computation
     - _Requirements: 30.1, 30.2, 30.3, 30.4_
 
@@ -382,7 +382,7 @@ Incremental implementation across four phases matching the PRD roadmap. Each pha
     - Compute time-to-resolution per incident; flag incidents exceeding SLA threshold (configurable)
     - `GET /staff/{staffId}/incidents` — returns open incidents assigned to staff member
     - _Requirements: 28.4_
-  - [ ]* 13.5 Write unit tests for Staff & Resource Management Service
+  - [x]* 13.5 Write unit tests for Staff & Resource Management Service
     - Test location TTL expiry, redeployment ranking by distance, shift conflict detection, and SLA breach flagging
     - _Requirements: 28.1, 28.2, 28.3, 28.4_
 
@@ -405,7 +405,7 @@ Incremental implementation across four phases matching the PRD roadmap. Each pha
     - `POST /simulation/{venueId}/run?eventId={id}` — trigger simulation run; returns `simulationRunId`
     - `GET /simulation/{venueId}/runs/{simulationRunId}` — returns simulation status and results
     - _Requirements: 27.1, 27.2, 27.3_
-  - [ ]* 14.5 Write unit tests for Predictive Simulation Service
+  - [x]* 14.5 Write unit tests for Predictive Simulation Service
     - Test gate load forecast computation with known ticket distributions, staff plan generation logic, and simulation result storage
     - _Requirements: 27.1, 27.2, 27.3_
 
@@ -418,7 +418,7 @@ Incremental implementation across four phases matching the PRD roadmap. Each pha
     - Subscribe to Redis alerts; display anomaly alert prominently within 10 s of threshold crossing
     - Show staff deployment recommendation referencing the affected zone
     - _Requirements: 6.3, 6.4_
-  - [ ]* 15.3 Write property test for anomaly alert and deployment recommendation (P15)
+  - [x]* 15.3 Write property test for anomaly alert and deployment recommendation (P15)
     - **Property 15: Anomaly Alert and Deployment Recommendation**
     - **Validates: Requirements 6.3, 6.4**
     - Use fast-check to generate zone density values exceeding configured thresholds and assert both an anomaly alert and a deployment recommendation referencing that zone are generated
@@ -441,7 +441,7 @@ Incremental implementation across four phases matching the PRD roadmap. Each pha
     - Per-kiosk revenue, footfall, and SLA compliance table (ADMIN role)
     - Inventory depletion alert feed
     - _Requirements: 30.1, 30.2, 30.4_
-  - [ ]* 15.9 Write unit tests for Operations Dashboard Phase 2 components
+  - [x]* 15.9 Write unit tests for Operations Dashboard Phase 2 components
     - Test RBAC view gating, anomaly alert rendering, zone configuration form validation, staff map overlay, and vendor panel data binding
     - _Requirements: 6.5, 6.7, 28.1, 30.1_
 
@@ -455,7 +455,7 @@ Incremental implementation across four phases matching the PRD roadmap. Each pha
     - Switching updates `activeEventId` context; all subsequent API calls use new `eventId`
     - Accessible to `ADMIN` role only
     - _Requirements: 19.2_
-  - [ ]* 16.3 Write property test for multi-event data isolation (P24)
+  - [x]* 16.3 Write property test for multi-event data isolation (P24)
     - **Property 24: Multi-Event Data Isolation**
     - **Validates: Requirements 19.1**
     - Use fast-check to generate two concurrent EventSessions E1 and E2 and assert any query scoped to E1 returns no records with `eventId = E2`, and vice versa
@@ -468,7 +468,7 @@ Incremental implementation across four phases matching the PRD roadmap. Each pha
   - [x] 17.2 Implement REST endpoints and leaderboard
     - `GET /rewards/{attendeeId}`, `POST /rewards/{attendeeId}/redeem/{rewardId}`, `GET /rewards/leaderboard/{eventId}`
     - _Requirements: 22.1, 22.2_
-  - [ ]* 17.3 Write property test for gamification idempotency (P27)
+  - [x]* 17.3 Write property test for gamification idempotency (P27)
     - **Property 27: Gamification Idempotency**
     - **Validates: Requirements 22.1**
     - Use fast-check to submit the same qualifying action event with the same deduplication key multiple times and assert points are awarded exactly once
@@ -514,11 +514,11 @@ Incremental implementation across four phases matching the PRD roadmap. Each pha
     - Pre-loaded emergency exit routes (JSON keyed by `zoneId`) stored in device SQLite at pre-event sync
     - If app is offline during evacuation, display cached routes automatically based on last known zone
     - _Requirements: 5.6, 10.5_
-  - [ ]* 20.4 Write property test for emergency audit log completeness (P14)
+  - [x]* 20.4 Write property test for emergency audit log completeness (P14)
     - **Property 14: Emergency Audit Log Completeness**
     - **Validates: Requirements 5.7**
     - Use fast-check to generate SOS signals, evacuation orders, and PA triggers and assert the audit log contains a matching entry with correct `eventId`, event type, and non-null timestamp recorded at or before processing
-  - [ ]* 20.5 Write unit tests for Emergency Coordinator
+  - [x]* 20.5 Write unit tests for Emergency Coordinator
     - Test SOS submission latency, evacuation trigger fan-out, PA adapter error handling, and audit log entry creation for each event type
     - _Requirements: 5.1, 5.2, 5.3, 5.7_
 
@@ -540,7 +540,7 @@ Incremental implementation across four phases matching the PRD roadmap. Each pha
     - `GET /medical/triage/{venueId}` — returns open medical SOS events sorted by priority (severity + time elapsed)
     - `PATCH /medical/sos/{sosId}/resolve` — mark SOS resolved with resolution notes
     - _Requirements: 29.4_
-  - [ ]* 21.5 Write unit tests for Medical & Safety Response Service
+  - [x]* 21.5 Write unit tests for Medical & Safety Response Service
     - Test medical SOS dispatch assignment logic, triage priority ordering, and AED locator data retrieval
     - _Requirements: 29.1, 29.2, 29.3, 29.4_
 
@@ -553,7 +553,7 @@ Incremental implementation across four phases matching the PRD roadmap. Each pha
     - Receive BLE advertisement; look up full `BLEMeshPayload` from SQLite by `payloadId`; surface as local notification
     - Deduplicate by `payloadId`: surface exactly one notification per unique `payloadId`
     - _Requirements: 20.2_
-  - [ ]* 22.3 Write property test for BLE mesh payload deduplication (P32)
+  - [x]* 22.3 Write property test for BLE mesh payload deduplication (P32)
     - **Property 32: BLE Mesh Payload Deduplication**
     - **Validates: Requirements 20.2**
     - Use fast-check to simulate receiving the same `BLEMeshPayload` with the same `payloadId` multiple times and assert exactly one notification is surfaced to the Attendee
@@ -576,15 +576,15 @@ Incremental implementation across four phases matching the PRD roadmap. Each pha
     - `GET /threats/{venueId}/active`, `POST /threats/{venueId}/resolve/{alertId}`
     - Apply 60 s cooldown if alert rate exceeds 10/min for a single zone; raise calibration warning to Venue_Admin
     - _Requirements: 18.1, 18.2_
-  - [ ]* 23.5 Write property test for threat alert generation completeness (P22)
+  - [x]* 23.5 Write property test for threat alert generation completeness (P22)
     - **Property 22: Threat Alert Generation Completeness**
     - **Validates: Requirements 18.1**
     - Use Hypothesis to generate movement sequences with anomaly score > threshold and assert exactly one `ThreatAlert` is generated; duplicate sensor events for the same session produce no duplicate alerts
-  - [ ]* 23.6 Write property test for unauthorized access alert correctness (P23)
+  - [x]* 23.6 Write property test for unauthorized access alert correctness (P23)
     - **Property 23: Unauthorized Access Alert Correctness**
     - **Validates: Requirements 18.2**
     - Use fast-check to generate entry events with `ATTENDEE`-role tokens in `isRestrictedAccess = true` zones and assert an unauthorized access alert is generated referencing the correct `zoneId` and session token
-  - [ ]* 23.7 Write unit tests for Threat Detection Service
+  - [x]* 23.7 Write unit tests for Threat Detection Service
     - Test LSTM fallback to rule-based detection, false-positive flood cooldown, and watchlist hash comparison
     - _Requirements: 18.1, 18.2_
 
@@ -597,11 +597,11 @@ Incremental implementation across four phases matching the PRD roadmap. Each pha
     - `GET /incidents/{venueId}` — sorted by AI priority score descending
     - `PATCH /incidents/{incidentId}/resolve` — staff resolves incident
     - _Requirements: 23.1, 23.2_
-  - [ ]* 24.3 Write property test for incident priority ordering (P28)
+  - [x]* 24.3 Write property test for incident priority ordering (P28)
     - **Property 28: Incident Priority Ordering**
     - **Validates: Requirements 23.2**
     - Use fast-check to generate pairs of incident reports (I1 with P1 > P2 for I2) and assert the Operations Dashboard feed displays I1 before I2 when sorted by priority
-  - [ ]* 24.4 Write unit tests for Incident Report Service
+  - [x]* 24.4 Write unit tests for Incident Report Service
     - Test priority score calculation for all type/density/duplicate combinations, and incident status transitions
     - _Requirements: 23.1, 23.2_
 
@@ -624,7 +624,7 @@ Incremental implementation across four phases matching the PRD roadmap. Each pha
     - `DELETE /compliance/gdpr/consents/{attendeeId}` — triggers account deletion + data anonymization pipeline (extends Auth Service `DELETE /auth/account`)
     - `GET /compliance/gdpr/export/{attendeeId}` — returns all stored data for an attendee (GDPR data portability)
     - _Requirements: 33.4, 9.3_
-  - [ ]* 25.5 Write unit tests for Compliance & Audit Management Service
+  - [x]* 25.5 Write unit tests for Compliance & Audit Management Service
     - Test fire-code threshold alerting, audit trail append-only constraint, report generation completeness, and GDPR deletion cascade
     - _Requirements: 33.1, 33.2, 33.3, 33.4_
 
@@ -649,7 +649,7 @@ Incremental implementation across four phases matching the PRD roadmap. Each pha
     - Regulatory report generation trigger (ADMIN role)
     - GDPR consent management view (ADMIN role)
     - _Requirements: 33.1, 33.2, 33.3, 33.4_
-  - [ ]* 26.5 Write unit tests for Phase 3 dashboard panels
+  - [x]* 26.5 Write unit tests for Phase 3 dashboard panels
     - Test SOS list rendering, evacuation button RBAC guard, incident feed sort order, triage queue priority rendering, and compliance table data binding
     - _Requirements: 5.1, 6.5, 23.2, 29.4, 33.1_
 
@@ -665,14 +665,14 @@ Incremental implementation across four phases matching the PRD roadmap. Each pha
   - [x] 28.1 Implement heatmap replay endpoint
     - `GET /analytics/{venueId}/replay?from={ts}&to={ts}&interval={seconds}` — query TimescaleDB; stream `ZoneDensitySnapshot` records in chronological order; consecutive snapshots <=10 s apart
     - _Requirements: 17.1_
-  - [ ]* 28.2 Write property test for heatmap replay completeness (P20)
+  - [x]* 28.2 Write property test for heatmap replay completeness (P20)
     - **Property 20: Heatmap Replay Completeness**
     - **Validates: Requirements 17.1**
     - Use Hypothesis to generate time windows [T1, T2] and assert the replay endpoint returns snapshots for every zone with consecutive gaps <=10 s and all timestamps within [T1, T2]
   - [x] 28.3 Implement congestion trends endpoint
     - `GET /analytics/{venueId}/congestion-trends?period={day|week|month}` — TimescaleDB time-bucket aggregations; cache in Redis with 5 min TTL
     - _Requirements: 17.2_
-  - [ ]* 28.4 Write property test for congestion trend monotonic aggregation (P21)
+  - [x]* 28.4 Write property test for congestion trend monotonic aggregation (P21)
     - **Property 21: Congestion Trend Monotonic Aggregation**
     - **Validates: Requirements 17.2**
     - Use Hypothesis to generate time bucket pairs (B1 ends before B2 begins) and assert they are returned in chronological order with non-overlapping timestamps
@@ -680,7 +680,7 @@ Incremental implementation across four phases matching the PRD roadmap. Each pha
     - `GET /analytics/{venueId}/incidents?eventId={id}` — aggregate by type, zone, resolution time
     - `GET /analytics/{venueId}/events/{eventId}/report` — generate full post-event PDF/JSON report
     - _Requirements: 17.3, 6.6_
-  - [ ]* 28.6 Write unit tests for Analytics Service
+  - [x]* 28.6 Write unit tests for Analytics Service
     - Test replay gap enforcement, congestion trend ordering, and incident aggregation grouping
     - _Requirements: 17.1, 17.2, 17.3_
 
@@ -699,7 +699,7 @@ Incremental implementation across four phases matching the PRD roadmap. Each pha
     - `GET /sponsors/{venueId}/reports/{sponsorZoneId}?eventId={id}` — compile: total footfall, avg dwell time, offer delivery count, offer click-through rate
     - Return as JSON or PDF; store in S3 with sponsor-scoped path
     - _Requirements: 34.3_
-  - [ ]* 29.4 Write unit tests for Sponsor Analytics Service
+  - [x]* 29.4 Write unit tests for Sponsor Analytics Service
     - Test dwell time aggregation from density snapshots, offer deduplication logic, and report compilation completeness
     - _Requirements: 34.1, 34.2, 34.3_
 
@@ -709,7 +709,7 @@ Incremental implementation across four phases matching the PRD roadmap. Each pha
     - Retrain XGBoost model; evaluate MAPE on held-out subset
     - Promote new model only if `new_model.MAPE < current_model.MAPE`; store in S3 with version tag; update `MLModelVersion` record in PostgreSQL
     - _Requirements: 26.1, 26.2_
-  - [ ]* 30.2 Write property test for post-event retraining promotion guard (P30)
+  - [x]* 30.2 Write property test for post-event retraining promotion guard (P30)
     - **Property 30: Post-Event Retraining Promotion Guard**
     - **Validates: Requirements 26.2**
     - Use Hypothesis to generate (M_new, M_current) MAPE pairs and assert M_new is promoted iff `M_new.MAPE < M_current.MAPE`
@@ -717,11 +717,11 @@ Incremental implementation across four phases matching the PRD roadmap. Each pha
     - `GET /ml/models/{serviceId}` — version history; `POST /ml/retrain/{eventId}` — manual trigger
     - Record `modelVersion` string in every Queue_Predictor and Threat Detection Service prediction output
     - _Requirements: 26.2_
-  - [ ]* 30.4 Write property test for ML model version traceability (P29)
+  - [x]* 30.4 Write property test for ML model version traceability (P29)
     - **Property 29: ML Model Version Traceability**
     - **Validates: Requirements 26.2**
     - Use Hypothesis to generate predictions and assert each prediction's `modelVersion` corresponds to an existing `MLModelVersion` record whose `isActive` was true at prediction time
-  - [ ]* 30.5 Write unit tests for ML Pipeline Service
+  - [x]* 30.5 Write unit tests for ML Pipeline Service
     - Test MAPE comparison promotion guard, S3 artifact versioning, and retraining failure handling
     - _Requirements: 26.1, 26.2_
 
@@ -741,7 +741,7 @@ Incremental implementation across four phases matching the PRD roadmap. Each pha
     - Dwell time charts and offer performance metrics table (ADMIN role)
     - Sponsor report download trigger
     - _Requirements: 34.1, 34.2, 34.3_
-  - [ ]* 31.5 Write unit tests for Analytics Dashboard components
+  - [x]* 31.5 Write unit tests for Analytics Dashboard components
     - Test replay scrubber rendering, congestion chart data binding, RBAC guard on ML version view, and sponsor analytics table rendering
     - _Requirements: 17.1, 17.2, 6.5, 34.1_
 
@@ -752,7 +752,7 @@ Incremental implementation across four phases matching the PRD roadmap. Each pha
   - [x] 32.2 Configure Route 53 health-check failover
     - Primary region health checks; warm standby region receives continuous data replication; failover within 10 s of primary failure
     - _Requirements: 8.5_
-  - [ ]* 32.3 Write integration smoke tests
+  - [x]* 32.3 Write integration smoke tests
     - Verify: Kafka throughput 500k concurrent streams without consumer lag; load test 500k concurrent users p95 heatmap <=5 s; failover routes requests to healthy instance <=10 s; auto-scaling triggers on >80% load
     - _Requirements: 8.1, 8.3, 8.4, 8.5_
 
